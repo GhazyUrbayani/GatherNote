@@ -182,6 +182,6 @@ Kami sangat menghargai kontribusi dari komunitas!
 
 - Buat Pull Request.
 
-===
+---
 
 <p align="center"> <b>Dibuat dengan ❤️ oleh Tim GatherNote</b> </p>
