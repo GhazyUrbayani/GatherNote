@@ -37,9 +37,11 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/folders', folderRoutes);
-app.use('/api/v1/notes', noteRoutes);
 app.use('/api/v1/groups', groupRoutes);
-app.use('/api/v1/notes', sharingRoutes); // Sharing routes are under /notes/:id
+
+// [FIX] Load Sharing Routes DULUAN agar tidak tertutup oleh Note Routes
+app.use('/api/v1/notes', sharingRoutes); // Must be BEFORE noteRoutes (more specific)
+app.use('/api/v1/notes', noteRoutes);
 
 // 404 handler
 app.use((req, res) => {
