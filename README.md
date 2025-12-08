@@ -161,7 +161,7 @@ npm run dev
 ```
 Buka browser dan kunjungi alamat yang muncul di terminal (biasanya http://localhost:5173 atau http://localhost:3001 tergantung konfigurasi).
 
-##🧪 Pengujian API
+## 🧪 Pengujian API
 Untuk menguji backend API tanpa frontend, Anda dapat menggunakan koleksi Postman yang telah disediakan.
 
 - Buka aplikasi Postman.
@@ -169,7 +169,7 @@ Untuk menguji backend API tanpa frontend, Anda dapat menggunakan koleksi Postman
 - Pilih file server/GatherNote_API.postman_collection.json.
 - Anda sekarang memiliki akses ke seluruh endpoint API yang tersedia untuk pengujian.
 
-##🤝 Kontribusi
+## 🤝 Kontribusi
 Kami sangat menghargai kontribusi dari komunitas!
 
 - Fork proyek ini.
@@ -182,6 +182,6 @@ Kami sangat menghargai kontribusi dari komunitas!
 
 - Buat Pull Request.
 
-==
+===
 
 <p align="center"> <b>Dibuat dengan ❤️ oleh Tim GatherNote</b> </p>
