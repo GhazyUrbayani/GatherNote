@@ -42,8 +42,7 @@ const setVisibility = async (req, res) => {
     const [updatedNote] = await db.select().from(notes).where(eq(notes.id, parseInt(id)));
 
     res.json({
-      message: `Note visibility set to ${visibility.toLowerCase()}`,
-      note: updatedNote
+      status: 'shared'
     });
 
   } catch (error) {
@@ -140,8 +139,8 @@ const addCollaborator = async (req, res) => {
       .where(eq(noteCollaborators.id, existing.id));
 
       return res.json({
-        message: 'Collaborator permission updated',
-        collaborator: updated
+        status: 'added',
+        collaborator_id: updated.id
       });
     }
 
@@ -165,8 +164,8 @@ const addCollaborator = async (req, res) => {
     .where(eq(noteCollaborators.id, newCollab.insertId));
 
     res.status(201).json({
-      message: 'Collaborator added successfully',
-      collaborator
+      status: 'added',
+      collaborator_id: collaborator.id
     });
 
   } catch (error) {
@@ -266,7 +265,7 @@ const removeCollaborator = async (req, res) => {
     await db.delete(noteCollaborators).where(eq(noteCollaborators.id, collaborator.id));
 
     res.json({
-      message: 'Collaborator removed successfully'
+      status: 'revoked'
     });
 
   } catch (error) {

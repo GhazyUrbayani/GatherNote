@@ -71,9 +71,8 @@ const register = async (req, res) => {
     });
 
     res.status(201).json({
-      message: 'User registered successfully',
-      user,
-      token
+      userId: user.id,
+      message: 'User registered'
     });
 
   } catch (error) {
@@ -128,15 +127,8 @@ const login = async (req, res) => {
     });
 
     res.json({
-      message: 'Login successful',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatar_url: user.avatar_url,
-        created_at: user.created_at
-      },
-      token
+      token,
+      userId: user.id
     });
 
   } catch (error) {

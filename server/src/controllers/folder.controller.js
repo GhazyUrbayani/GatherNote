@@ -28,8 +28,8 @@ const createFolder = async (req, res) => {
     const [folder] = await db.select().from(folders).where(eq(folders.id, newFolder.insertId));
 
     res.status(201).json({
-      message: 'Folder created successfully',
-      folder
+      folder_id: folder.id,
+      name: folder.name
     });
 
   } catch (error) {
@@ -62,7 +62,7 @@ const getFolders = async (req, res) => {
     .where(eq(folders.owner_id, req.user.userId))
     .orderBy(desc(folders.is_pinned), desc(folders.created_at));
 
-    res.json({ folders: foldersList });
+    res.json(foldersList);
 
   } catch (error) {
     console.error('Get folders error:', error);
@@ -99,7 +99,7 @@ const getFolderById = async (req, res) => {
 
     folder.notes = folderNotes;
 
-    res.json({ folder });
+    res.json(folder);
 
   } catch (error) {
     console.error('Get folder error:', error);
@@ -140,11 +140,9 @@ const updateFolder = async (req, res) => {
 
     await db.update(folders).set(updateData).where(eq(folders.id, parseInt(id)));
 
-    const [folder] = await db.select().from(folders).where(eq(folders.id, parseInt(id)));
-
     res.json({
-      message: 'Folder updated successfully',
-      folder
+      status: 'updated',
+      folder_id: parseInt(id)
     });
 
   } catch (error) {
@@ -190,7 +188,7 @@ const deleteFolder = async (req, res) => {
     await db.delete(folders).where(eq(folders.id, parseInt(id)));
 
     res.json({
-      message: 'Folder deleted successfully'
+      status: 'deleted'
     });
 
   } catch (error) {

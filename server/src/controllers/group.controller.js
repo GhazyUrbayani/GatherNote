@@ -45,8 +45,8 @@ const createGroup = async (req, res) => {
     });
 
     res.status(201).json({
-      message: 'Group created successfully',
-      group
+      group_id: group.id,
+      join_code: group.join_code
     });
 
   } catch (error) {
@@ -82,7 +82,7 @@ const getGroups = async (req, res) => {
       joined_at: m.joined_at
     }));
 
-    res.json({ groups: groupsList });
+    res.json(groupsList);
 
   } catch (error) {
     console.error('Get groups error:', error);
@@ -140,10 +140,8 @@ const getGroupById = async (req, res) => {
     group.members = members;
 
     res.json({
-      group: {
-        ...group,
-        my_role: membership.role
-      }
+      ...group,
+      my_role: membership.role
     });
 
   } catch (error) {
@@ -203,12 +201,9 @@ const joinGroup = async (req, res) => {
       role: 'MEMBER'
     });
 
-    const [membership] = await db.select().from(groupMembers).where(eq(groupMembers.id, newMember.insertId));
-
     res.status(201).json({
-      message: 'Successfully joined group',
-      group,
-      membership
+      status: 'joined',
+      group_id: group.id
     });
 
   } catch (error) {
@@ -272,7 +267,7 @@ const removeMember = async (req, res) => {
     await db.delete(groupMembers).where(eq(groupMembers.id, targetMembership.id));
 
     res.json({
-      message: isLeavingSelf ? 'Successfully left group' : 'Member removed successfully'
+      status: 'removed'
     });
 
   } catch (error) {

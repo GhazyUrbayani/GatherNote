@@ -60,8 +60,8 @@ const createNote = async (req, res) => {
     .where(eq(notes.id, newNote.insertId));
 
     res.status(201).json({
-      message: 'Note created successfully',
-      note
+      note_id: note.id,
+      created_at: note.created_at
     });
 
   } catch (error) {
@@ -122,7 +122,7 @@ const getNotes = async (req, res) => {
     .where(and(...conditions))
     .orderBy(desc(notes.is_favorite), ...orderByClause);
 
-    res.json({ notes: notesList });
+    res.json(notesList);
 
   } catch (error) {
     console.error('Get notes error:', error);
@@ -170,7 +170,7 @@ const getNoteById = async (req, res) => {
       });
     }
 
-    res.json({ note });
+    res.json(note);
 
   } catch (error) {
     console.error('Get note error:', error);
@@ -235,8 +235,8 @@ const updateNote = async (req, res) => {
     .where(eq(notes.id, parseInt(id)));
 
     res.json({
-      message: 'Note updated successfully',
-      note
+      updated_at: note.updated_at,
+      status: 'saved'
     });
 
   } catch (error) {
@@ -272,7 +272,7 @@ const deleteNote = async (req, res) => {
     await db.delete(notes).where(eq(notes.id, parseInt(id)));
 
     res.json({
-      message: 'Note deleted successfully'
+      status: 'deleted'
     });
 
   } catch (error) {
@@ -315,8 +315,8 @@ const togglePin = async (req, res) => {
     const [note] = await db.select().from(notes).where(eq(notes.id, parseInt(id)));
 
     res.json({
-      message: note.is_favorite ? 'Note pinned' : 'Note unpinned',
-      note
+      note_id: note.id,
+      is_favorite: note.is_favorite
     });
 
   } catch (error) {
@@ -398,8 +398,7 @@ const moveNote = async (req, res) => {
     .where(eq(notes.id, parseInt(id)));
 
     res.json({
-      message: 'Note moved successfully',
-      note
+      status: 'moved'
     });
 
   } catch (error) {
