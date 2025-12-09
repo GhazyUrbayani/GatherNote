@@ -1,24 +1,27 @@
-import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+'use client';
+
+import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Share2, MoreVertical, Bold, Italic, Underline, List, AlignLeft, Image as ImageIcon, Save } from 'lucide-react';
 
-const NoteEditor = () => {
-  const navigate = useNavigate();
-  const { noteId } = useParams(); // Mengambil ID dari URL
+export default function NoteEditor() {
+  const router = useRouter();
+  const params = useParams();
+  
   const [title, setTitle] = useState("Untitled Note");
   const [content, setContent] = useState("");
 
-  console.log("Membuka folder dengan ID:", noteId);
+  console.log("Editing note:", params.id);
 
   return (
-    <div className="flex flex-col h-screen bg-[#F5F8FF] font-sans">
+    <div className="flex flex-col h-screen bg-[#F5F8FF]">
       
-      {/* --- 1. HEADER (Navigation & Title) --- */}
+      {/* HEADER (Navigation & Title) */}
       <header className="bg-white px-6 py-4 border-b border-gray-200 flex justify-between items-center shadow-sm z-10">
         <div className="flex items-center gap-4 flex-1">
           <button 
-            onClick={() => navigate(-1)} // Kembali ke halaman sebelumnya
-            className="p-2 hover:bg-gray-100 rounded-full text-gn-primary transition"
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-100 rounded-full text-[#1E3A8A] transition cursor-pointer"
           >
             <ArrowLeft size={24} />
           </button>
@@ -28,35 +31,35 @@ const NoteEditor = () => {
             type="text" 
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="text-xl font-bold text-gn-primary bg-transparent focus:outline-none focus:border-b-2 focus:border-gn-secondary w-full max-w-md px-2"
+            className="text-xl font-bold text-[#1E3A8A] bg-transparent focus:outline-none focus:border-b-2 focus:border-[#FFC107] w-full max-w-md px-2"
           />
           
-          {/* Indikator Status Simpan */}
+          {/* Save Status Indicator */}
           <span className="text-xs text-gray-400 flex items-center gap-1">
             <Save size={12} /> Saved
           </span>
         </div>
 
-        {/* Action Buttons (Share & Profile) */}
+        {/* Action Buttons (Share & More) */}
         <div className="flex items-center gap-4">
-          {/* Collaborators Avatar Group (Dummy) */}
+          {/* Collaborators Avatar Group */}
           <div className="flex -space-x-2 mr-4">
              <div className="w-8 h-8 rounded-full bg-blue-500 border-2 border-white"></div>
              <div className="w-8 h-8 rounded-full bg-green-500 border-2 border-white"></div>
           </div>
 
-          <button className="flex items-center gap-2 bg-gn-primary/10 text-gn-primary px-4 py-2 rounded-lg hover:bg-gn-primary/20 transition font-semibold text-sm">
+          <button className="flex items-center gap-2 bg-[#1E3A8A]/10 text-[#1E3A8A] px-4 py-2 rounded-lg hover:bg-[#1E3A8A]/20 transition font-semibold text-sm cursor-pointer">
             <Share2 size={18} />
             Share
           </button>
           
-          <button className="p-2 text-gray-400 hover:text-gn-primary">
+          <button className="p-2 text-gray-400 hover:text-[#1E3A8A] cursor-pointer">
             <MoreVertical size={24} />
           </button>
         </div>
       </header>
 
-      {/* --- 2. TOOLBAR --- */}
+      {/* TOOLBAR */}
       <div className="bg-white px-8 py-3 border-b border-gray-200 flex items-center gap-2 overflow-x-auto">
         <ToolButton icon={<Bold size={18} />} />
         <ToolButton icon={<Italic size={18} />} />
@@ -67,14 +70,14 @@ const NoteEditor = () => {
         <div className="w-px h-6 bg-gray-300 mx-2"></div>
         <ToolButton icon={<ImageIcon size={18} />} />
         
-        <select className="ml-auto bg-gray-50 border border-gray-200 text-sm rounded-md px-2 py-1 text-gray-600 focus:outline-none">
+        <select className="ml-auto bg-gray-50 border border-gray-200 text-sm rounded-md px-2 py-1 text-gray-600 focus:outline-none cursor-pointer">
             <option>Paragraph</option>
             <option>Heading 1</option>
             <option>Heading 2</option>
         </select>
       </div>
 
-      {/* --- 3. EDITOR AREA (Kertas Putih) --- */}
+      {/* EDITOR AREA (White Paper) */}
       <main className="flex-1 overflow-y-auto p-8 flex justify-center">
         <div className="bg-white w-full max-w-4xl min-h-[800px] shadow-sm rounded-xl p-12 relative">
             <textarea
@@ -88,13 +91,11 @@ const NoteEditor = () => {
 
     </div>
   );
-};
+}
 
-// Komponen Kecil untuk Tombol Toolbar
-const ToolButton = ({ icon }) => (
-    <button className="p-2 text-gray-500 hover:bg-gn-soft hover:text-gn-primary rounded-md transition">
+// Tool Button Component
+const ToolButton = ({ icon }: { icon: React.ReactNode }) => (
+    <button className="p-2 text-gray-500 hover:bg-[#F5F8FF] hover:text-[#1E3A8A] rounded-md transition cursor-pointer">
         {icon}
     </button>
 );
-
-export default NoteEditor;
