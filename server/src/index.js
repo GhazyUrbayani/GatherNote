@@ -12,6 +12,7 @@ const folderRoutes = require('./routes/folder.routes');
 const noteRoutes = require('./routes/note.routes');
 const groupRoutes = require('./routes/group.routes');
 const sharingRoutes = require('./routes/sharing.routes');
+const aiRoutes = require('./routes/ai.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -38,6 +39,7 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/folders', folderRoutes);
 app.use('/api/v1/groups', groupRoutes);
+app.use('/api/v1/ai', aiRoutes);
 
 // [FIX] Load Sharing Routes DULUAN agar tidak tertutup oleh Note Routes
 app.use('/api/v1/notes', sharingRoutes); // Must be BEFORE noteRoutes (more specific)

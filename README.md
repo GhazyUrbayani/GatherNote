@@ -16,13 +16,14 @@
 
 ## 📖 Tentang Proyek
 
-**GatherNote** adalah aplikasi manajemen catatan berbasis web yang memungkinkan pengguna untuk membuat, mengorganisir folder, berkolaborasi dalam grup, dan berbagi ide secara *real-time*. Dibangun dengan arsitektur *monorepo* yang memisahkan *frontend* modern berbasis React/Next.js dan *backend* RESTful API yang tangguh.
+**GatherNote** adalah aplikasi manajemen catatan berbasis web yang memungkinkan pengguna untuk membuat, mengorganisir folder, berkolaborasi dalam grup, dan berbagi ide secara _real-time_. Dibangun dengan arsitektur _monorepo_ yang memisahkan _frontend_ modern berbasis React/Next.js dan _backend_ RESTful API yang tangguh.
 
 ---
 
 ## 🛠️ Teknologi yang Digunakan
 
 ### **Frontend (`client/`)**
+
 <p align="left">
   <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white">
   <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black">
@@ -34,6 +35,7 @@
 </p>
 
 ### **Backend (`server/`)**
+
 <p align="left">
   <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white">
   <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white">
@@ -109,6 +111,7 @@ GatherNote/
 ```
 
 ## 🌟 Fitur Unggulan
+
 - 🔐 Autentikasi Aman: Sistem registrasi dan login menggunakan JWT & enkripsi password.
 - 📝 Note Editor: Editor teks kaya fitur untuk membuat catatan.
 - 📂 Sistem Folder: Organisasi catatan yang rapi dengan struktur folder.
@@ -117,9 +120,11 @@ GatherNote/
 - 🌓 Responsive UI: Antarmuka modern yang responsif dibangun dengan Tailwind CSS.
 
 ## 🚀 Panduan Instalasi & Menjalankan
+
 Ikuti langkah-langkah di bawah ini untuk menjalankan proyek di lingkungan lokal Anda.
 
 ### Prasyarat
+
 - Node.js (v18 atau lebih baru)
 - PostgreSQL Database
 - NPM atau Yarn
@@ -132,6 +137,7 @@ Masuk ke direktori server dan instal dependensi:
 cd server
 npm install
 ```
+
 Buat file .env di dalam folder server/ dan isi konfigurasi database Anda:
 
 ```
@@ -147,9 +153,10 @@ npm run dev
 ```
 
 ### 2. Konfigurasi Frontend (Client)
+
 Buka terminal baru, masuk ke direktori client, dan instal dependensi:
 
-``` Bash
+```Bash
 cd client
 npm install
 ```
@@ -159,9 +166,11 @@ Jalankan aplikasi frontend:
 ```Bash
 npm run dev
 ```
+
 Buka browser dan kunjungi alamat yang muncul di terminal (biasanya http://localhost:5173 atau http://localhost:3001 tergantung konfigurasi).
 
 ## 🧪 Pengujian API
+
 Untuk menguji backend API tanpa frontend, Anda dapat menggunakan koleksi Postman yang telah disediakan.
 
 - Buka aplikasi Postman.
@@ -170,6 +179,7 @@ Untuk menguji backend API tanpa frontend, Anda dapat menggunakan koleksi Postman
 - Anda sekarang memiliki akses ke seluruh endpoint API yang tersedia untuk pengujian.
 
 ## 🤝 Kontribusi
+
 Kami sangat menghargai kontribusi dari komunitas!
 
 - Fork proyek ini.
