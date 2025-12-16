@@ -1,22 +1,72 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Users } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import CreateGroupModal from '../components/CreateGroupModal';
 import JoinGroupModal from '../components/JoinGroupModal';
+import { groupAPI } from '../lib/api';
+
+interface Group {
+  group_id: number;
+  name: string;
+  description: string;
+  group_code: string;
+  created_at: string;
+  member_count?: number;
+}
 
 export default function GroupsPage() {
   const router = useRouter();
   const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
   const [isJoinGroupModalOpen, setIsJoinGroupModalOpen] = useState(false);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const groups = [
-    { id: 1, name: 'Study Group Alpha', members: 12, icon: '📚', color: 'bg-green-100' },
-    { id: 2, name: 'Project Team Beta', members: 8, icon: '💼', color: 'bg-blue-100' },
-    { id: 3, name: 'Research Lab', members: 15, icon: '🔬', color: 'bg-purple-100' },
-  ];
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    fetchGroups();
+  }, [router]);
+
+  const fetchGroups = async () => {
+    try {
+      setLoading(true);
+      const response = await groupAPI.getAll();
+      
+      if (response.error) {
+        localStorage.removeItem('token');
+        router.push('/login');
+        return;
+      }
+
+      if (response.data) {
+        setGroups(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getGroupColor = (index: number) => {
+    const colors = ['bg-green-100', 'bg-blue-100', 'bg-purple-100', 'bg-pink-100', 'bg-yellow-100'];
+    return colors[index % colors.length];
+  };
+
+  const getGroupIcon = (name: string) => {
+    if (name.toLowerCase().includes('study')) return '📚';
+    if (name.toLowerCase().includes('project')) return '💼';
+    if (name.toLowerCase().includes('research')) return '🔬';
+    if (name.toLowerCase().includes('team')) return '👥';
+    return '👨‍👩‍👧‍👦';
+  };
 
   return (
     <div className="flex min-h-screen bg-[#F5F8FF]">
@@ -51,30 +101,50 @@ export default function GroupsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {groups.map((group) => (
-            <div
-              key={group.id}
-              onClick={() => router.push(`/group/${group.id}`)}
-              className={`${group.color} p-6 rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border border-gray-200`}
-            >
-              <div className="text-4xl mb-4">{group.icon}</div>
-              <h3 className="text-lg font-bold text-gray-800 mb-2">{group.name}</h3>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Users size={16} />
-                <span>{group.members} members</span>
-              </div>
+          {loading ? (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              Loading groups...
             </div>
-          ))}
+          ) : groups.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              Belum ada group. Klik "Create Group" atau "Join Group" untuk memulai!
+            </div>
+          ) : (
+            groups.map((group, index) => (
+              <div
+                key={group.group_id}
+                onClick={() => router.push(`/group/${group.group_id}`)}
+                className={`${getGroupColor(index)} p-6 rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border border-gray-200`}
+              >
+                <div className="text-4xl mb-4">{getGroupIcon(group.name)}</div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">{group.name}</h3>
+                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{group.description}</p>
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Users size={16} />
+                    <span>{group.member_count || 0} members</span>
+                  </div>
+                  <span className="text-xs text-gray-500 font-mono">{group.group_code}</span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </main>
 
       <CreateGroupModal 
         isOpen={isCreateGroupModalOpen} 
-        onClose={() => setIsCreateGroupModalOpen(false)} 
+        onClose={() => {
+          setIsCreateGroupModalOpen(false);
+          fetchGroups();
+        }} 
       />
       <JoinGroupModal 
         isOpen={isJoinGroupModalOpen} 
-        onClose={() => setIsJoinGroupModalOpen(false)} 
+        onClose={() => {
+          setIsJoinGroupModalOpen(false);
+          fetchGroups();
+        }} 
       />
     </div>
   );

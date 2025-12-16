@@ -1,18 +1,85 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search as SearchIcon, ArrowLeft } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
+import { searchAPI } from '../lib/api';
+
+interface SearchResult {
+  note_id: number;
+  title: string;
+  content: string;
+  created_at: string;
+  folder_name?: string;
+}
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
   const router = useRouter();
 
-  const searchResults = [
-    { id: 1, title: 'Meeting Notes', snippet: 'Important discussion about project timeline...', date: '2 days ago' },
-    { id: 2, title: 'Research Ideas', snippet: 'Ideas for data mining research paper...', date: '1 week ago' },
-  ];
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (searchQuery.length > 0) {
+      const timeoutId = setTimeout(() => {
+        handleSearch();
+      }, 500); // Debounce 500ms
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      setSearchResults([]);
+      setSearched(false);
+    }
+  }, [searchQuery]);
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    setLoading(true);
+    setSearched(true);
+
+    try {
+      const response = await searchAPI.searchNotes(searchQuery);
+      
+      if (response.data) {
+        setSearchResults(response.data);
+      } else {
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Error searching notes:', error);
+      setSearchResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getSnippet = (content: string, maxLength: number = 150) => {
+    if (content.length <= maxLength) return content;
+    return content.substring(0, maxLength) + '...';
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  };
 
   return (
     <div className="flex min-h-screen bg-[#F5F8FF]">
@@ -43,17 +110,38 @@ export default function SearchPage() {
         </div>
 
         <div className="space-y-4">
-          {searchResults.map((result) => (
-            <div
-              key={result.id}
-              onClick={() => router.push(`/note/${result.id}`)}
-              className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border border-gray-200"
-            >
-              <h3 className="text-lg font-bold text-gray-800 mb-2">{result.title}</h3>
-              <p className="text-sm text-gray-600 mb-3">{result.snippet}</p>
-              <span className="text-xs text-gray-400">{result.date}</span>
+          {loading ? (
+            <div className="text-center py-12 text-gray-500">
+              Searching...
             </div>
-          ))}
+          ) : !searched ? (
+            <div className="text-center py-12 text-gray-500">
+              Masukkan kata kunci untuk mencari catatan Anda
+            </div>
+          ) : searchResults.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              Tidak ada hasil untuk "{searchQuery}"
+            </div>
+          ) : (
+            searchResults.map((result) => (
+              <div
+                key={result.note_id}
+                onClick={() => router.push(`/note/${result.note_id}`)}
+                className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border border-gray-200"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-lg font-bold text-gray-800">{result.title}</h3>
+                  {result.folder_name && (
+                    <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
+                      {result.folder_name}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{getSnippet(result.content)}</p>
+                <span className="text-xs text-gray-400">{formatDate(result.created_at)}</span>
+              </div>
+            ))
+          )}
         </div>
       </main>
     </div>

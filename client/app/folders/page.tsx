@@ -1,21 +1,74 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import CreateFolderModal from '../components/CreateFolderModal';
+import { folderAPI } from '../lib/api';
+
+interface Folder {
+  folder_id: number;
+  name: string;
+  topic: string;
+  created_at: string;
+  updated_at: string;
+  noteCount?: number;
+}
 
 export default function FoldersPage() {
   const router = useRouter();
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const folders = [
-    { id: 1, name: 'My Business Ideas', topic: 'Entrepreneurship', noteCount: 17, color: 'bg-blue-100', icon: '💡', isPinned: true },
-    { id: 2, name: 'Data Mining', topic: 'Data Science', noteCount: 12, color: 'bg-green-100', icon: '📊', isPinned: false },
-    { id: 3, name: 'Uncategorized', topic: 'General', noteCount: 8, color: 'bg-gray-100', icon: '📝', isPinned: false },
-    { id: 4, name: 'Personal Notes', topic: 'Life', noteCount: 5, color: 'bg-purple-100', icon: '🎯', isPinned: false },
-  ];
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    fetchFolders();
+  }, [router]);
+
+  const fetchFolders = async () => {
+    try {
+      setLoading(true);
+      const response = await folderAPI.getAll();
+      
+      if (response.error) {
+        localStorage.removeItem('token');
+        router.push('/login');
+        return;
+      }
+
+      if (response.data) {
+        setFolders(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching folders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getFolderColor = (index: number) => {
+    const colors = ['bg-blue-100', 'bg-green-100', 'bg-purple-100', 'bg-yellow-100', 'bg-pink-100', 'bg-indigo-100'];
+    return colors[index % colors.length];
+  };
+
+  const getFolderIcon = (topic: string) => {
+    const icons: { [key: string]: string } = {
+      'entrepreneurship': '💡',
+      'data science': '📊',
+      'general': '📝',
+      'technology': '💻',
+      'business': '💼',
+      'life': '🎯',
+    };
+    return icons[topic.toLowerCase()] || '📁';
+  };
 
   return (
     <div className="flex min-h-screen bg-[#F5F8FF]">
@@ -42,32 +95,40 @@ export default function FoldersPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {folders.map((folder) => (
-            <div
-              key={folder.id}
-              onClick={() => router.push(`/folder/${folder.id}`)}
-              className={`${folder.color} p-6 rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border border-gray-200 relative`}
-            >
-              {folder.isPinned && (
-                <div className="absolute top-4 right-4">
-                  <span className="text-yellow-500 text-xl">📌</span>
-                </div>
-              )}
-              <div className="text-4xl mb-4">{folder.icon}</div>
-              <h3 className="text-lg font-bold text-gray-800 mb-1">{folder.name}</h3>
-              <p className="text-sm text-gray-600 mb-4">{folder.topic}</p>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">{folder.noteCount} notes</span>
-                <span className="text-[#1E3A8A] font-medium">View →</span>
-              </div>
+          {loading ? (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              Loading folders...
             </div>
-          ))}
+          ) : folders.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              Belum ada folder. Klik "New Folder" untuk membuat folder pertama Anda!
+            </div>
+          ) : (
+            folders.map((folder, index) => (
+              <div
+                key={folder.folder_id}
+                onClick={() => router.push(`/folder/${folder.folder_id}`)}
+                className={`${getFolderColor(index)} p-6 rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border border-gray-200 relative`}
+              >
+                <div className="text-4xl mb-4">{getFolderIcon(folder.topic)}</div>
+                <h3 className="text-lg font-bold text-gray-800 mb-1">{folder.name}</h3>
+                <p className="text-sm text-gray-600 mb-4">{folder.topic}</p>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">{folder.noteCount || 0} notes</span>
+                  <span className="text-[#1E3A8A] font-medium">View →</span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </main>
 
       <CreateFolderModal 
         isOpen={isFolderModalOpen} 
-        onClose={() => setIsFolderModalOpen(false)} 
+        onClose={() => {
+          setIsFolderModalOpen(false);
+          fetchFolders(); // Refresh data setelah membuat folder baru
+        }} 
       />
     </div>
   );
