@@ -86,7 +86,7 @@ INSERT INTO notes (
         user_id,
         title,
         content,
-        status,
+        note_status,
         created_at,
         updated_at
     )

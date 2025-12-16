@@ -15,7 +15,7 @@ const sharingRoutes = require('./routes/sharing.routes');
 const aiRoutes = require('./routes/ai.routes');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 7004;
 
 // Middleware
 app.use(helmet());
