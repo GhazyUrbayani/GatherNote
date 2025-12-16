@@ -11,18 +11,23 @@ import OptionModal from './components/OptionModal';
 import { folderAPI, userAPI } from './lib/api';
 
 interface Folder {
-  folder_id: number;
+  id: number;
+  owner_id: number;
   name: string;
-  topic: string;
+  description: string | null;
+  color: string | null;
+  icon: string | null;
+  is_pinned: boolean;
   created_at: string;
-  updated_at: string;
-  noteCount?: number;
+  _count: number;
 }
 
 interface UserProfile {
-  user_id: number;
+  id: number;
   name: string;
   email: string;
+  avatar_url: string | null;
+  created_at: string;
 }
 
 export default function Home() {
@@ -60,18 +65,22 @@ export default function Home() {
       if (profileRes.error) {
         // Token invalid atau expired
         localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userName');
         router.push('/login');
         return;
       }
 
-      setUserProfile(profileRes.data);
+      setUserProfile(profileRes.user);
       
-      if (foldersRes.data) {
+      if (foldersRes.folders) {
         // Ambil hanya 3 folder terakhir untuk "Recently Visited"
-        setFolders(foldersRes.data.slice(-3).reverse());
+        setFolders(foldersRes.folders.slice(0, 3));
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      localStorage.removeItem('token');
+      router.push('/login');
     } finally {
       setLoading(false);
     }
@@ -82,15 +91,30 @@ export default function Home() {
     return colors[index % colors.length];
   };
 
-  const getFolderIcon = (topic: string) => {
+  const getFolderIcon = (description: string | null) => {
+    if (!description) return '📁';
+    const desc = description.toLowerCase();
     const icons: { [key: string]: string } = {
       'entrepreneurship': '💡',
+      'entrepreneur': '💡',
+      'business': '💼',
       'data science': '📊',
+      'data': '📊',
       'general': '📝',
       'technology': '💻',
-      'business': '💼',
+      'tech': '💻',
+      'course': '📚',
+      'tst': '🌐',
+      'academic': '🎓',
+      'research': '🔬',
+      'personal': '🎯',
+      'life': '🌟',
     };
-    return icons[topic.toLowerCase()] || '📁';
+    
+    for (const [key, icon] of Object.entries(icons)) {
+      if (desc.includes(key)) return icon;
+    }
+    return '📁';
   };
 
   return (
@@ -175,14 +199,20 @@ export default function Home() {
             ) : (
               folders.map((folder, index) => (
                 <div
-                  key={folder.folder_id}
+                  key={folder.id}
                   className={`${getFolderColor(index)} p-6 rounded-2xl shadow-md hover:shadow-xl transition-all border border-gray-200 relative group`}
                 >
+                  {folder.is_pinned && (
+                    <div className="absolute top-4 right-12">
+                      <span className="text-yellow-500 text-xl">📌</span>
+                    </div>
+                  )}
+                  
                   {/* Menu Button */}
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      setOptionData({ isOpen: true, title: folder.name, isPinned: false });
+                      setOptionData({ isOpen: true, title: folder.name, isPinned: folder.is_pinned });
                     }}
                     className="absolute top-4 right-4 p-2 hover:bg-white/50 rounded-full transition opacity-0 group-hover:opacity-100 cursor-pointer"
                   >
@@ -190,14 +220,14 @@ export default function Home() {
                   </button>
 
                   <div 
-                    onClick={() => router.push(`/folder/${folder.folder_id}`)}
+                    onClick={() => router.push(`/folder/${folder.id}`)}
                     className="cursor-pointer"
                   >
-                    <div className="text-4xl mb-4">{getFolderIcon(folder.topic)}</div>
+                    <div className="text-4xl mb-4">{folder.icon || getFolderIcon(folder.description)}</div>
                     <h3 className="text-lg font-bold text-gray-800 mb-2">{folder.name}</h3>
-                    <p className="text-sm text-gray-600 mb-4">{folder.topic}</p>
+                    <p className="text-sm text-gray-600 mb-4">{folder.description || 'No description'}</p>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500">{folder.noteCount || 0} notes</span>
+                      <span className="text-sm text-gray-500">{folder._count || 0} notes</span>
                       <button className="text-[#1E3A8A] hover:text-[#1E3A8A]/70 font-medium">View →</button>
                     </div>
                   </div>

@@ -8,12 +8,15 @@ import CreateFolderModal from '../components/CreateFolderModal';
 import { folderAPI } from '../lib/api';
 
 interface Folder {
-  folder_id: number;
+  id: number;
+  owner_id: number;
   name: string;
-  topic: string;
+  description: string | null;
+  color: string | null;
+  icon: string | null;
+  is_pinned: boolean;
   created_at: string;
-  updated_at: string;
-  noteCount?: number;
+  _count: number;
 }
 
 export default function FoldersPage() {
@@ -39,15 +42,19 @@ export default function FoldersPage() {
       
       if (response.error) {
         localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userName');
         router.push('/login');
         return;
       }
 
-      if (response.data) {
-        setFolders(response.data);
+      if (response.folders) {
+        setFolders(response.folders);
       }
     } catch (error) {
       console.error('Error fetching folders:', error);
+      localStorage.removeItem('token');
+      router.push('/login');
     } finally {
       setLoading(false);
     }
@@ -58,16 +65,30 @@ export default function FoldersPage() {
     return colors[index % colors.length];
   };
 
-  const getFolderIcon = (topic: string) => {
+  const getFolderIcon = (description: string | null) => {
+    if (!description) return '📁';
+    const desc = description.toLowerCase();
     const icons: { [key: string]: string } = {
       'entrepreneurship': '💡',
+      'entrepreneur': '💡',
+      'business': '💼',
       'data science': '📊',
+      'data': '📊',
       'general': '📝',
       'technology': '💻',
-      'business': '💼',
-      'life': '🎯',
+      'tech': '💻',
+      'course': '📚',
+      'tst': '🌐',
+      'academic': '🎓',
+      'research': '🔬',
+      'personal': '🎯',
+      'life': '🌟',
     };
-    return icons[topic.toLowerCase()] || '📁';
+    
+    for (const [key, icon] of Object.entries(icons)) {
+      if (desc.includes(key)) return icon;
+    }
+    return '📁';
   };
 
   return (
@@ -106,15 +127,20 @@ export default function FoldersPage() {
           ) : (
             folders.map((folder, index) => (
               <div
-                key={folder.folder_id}
-                onClick={() => router.push(`/folder/${folder.folder_id}`)}
+                key={folder.id}
+                onClick={() => router.push(`/folder/${folder.id}`)}
                 className={`${getFolderColor(index)} p-6 rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border border-gray-200 relative`}
               >
-                <div className="text-4xl mb-4">{getFolderIcon(folder.topic)}</div>
+                {folder.is_pinned && (
+                  <div className="absolute top-4 right-4">
+                    <span className="text-yellow-500 text-xl">📌</span>
+                  </div>
+                )}
+                <div className="text-4xl mb-4">{folder.icon || getFolderIcon(folder.description)}</div>
                 <h3 className="text-lg font-bold text-gray-800 mb-1">{folder.name}</h3>
-                <p className="text-sm text-gray-600 mb-4">{folder.topic}</p>
+                <p className="text-sm text-gray-600 mb-4">{folder.description || 'No description'}</p>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">{folder.noteCount || 0} notes</span>
+                  <span className="text-gray-500">{folder._count || 0} notes</span>
                   <span className="text-[#1E3A8A] font-medium">View →</span>
                 </div>
               </div>

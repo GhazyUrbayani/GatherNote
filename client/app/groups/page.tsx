@@ -9,12 +9,12 @@ import JoinGroupModal from '../components/JoinGroupModal';
 import { groupAPI } from '../lib/api';
 
 interface Group {
-  group_id: number;
+  id: number;
   name: string;
   description: string;
   group_code: string;
   created_at: string;
-  member_count?: number;
+  _count: number;
 }
 
 export default function GroupsPage() {
@@ -41,15 +41,19 @@ export default function GroupsPage() {
       
       if (response.error) {
         localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userName');
         router.push('/login');
         return;
       }
 
-      if (response.data) {
-        setGroups(response.data);
+      if (response.groups) {
+        setGroups(response.groups);
       }
     } catch (error) {
       console.error('Error fetching groups:', error);
+      localStorage.removeItem('token');
+      router.push('/login');
     } finally {
       setLoading(false);
     }
@@ -112,8 +116,8 @@ export default function GroupsPage() {
           ) : (
             groups.map((group, index) => (
               <div
-                key={group.group_id}
-                onClick={() => router.push(`/group/${group.group_id}`)}
+                key={group.id}
+                onClick={() => router.push(`/group/${group.id}`)}
                 className={`${getGroupColor(index)} p-6 rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border border-gray-200`}
               >
                 <div className="text-4xl mb-4">{getGroupIcon(group.name)}</div>
@@ -122,7 +126,7 @@ export default function GroupsPage() {
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2 text-gray-600">
                     <Users size={16} />
-                    <span>{group.member_count || 0} members</span>
+                    <span>{group._count || 0} members</span>
                   </div>
                   <span className="text-xs text-gray-500 font-mono">{group.group_code}</span>
                 </div>

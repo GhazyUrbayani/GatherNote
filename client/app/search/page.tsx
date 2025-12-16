@@ -7,7 +7,7 @@ import Sidebar from '../components/Sidebar';
 import { searchAPI } from '../lib/api';
 
 interface SearchResult {
-  note_id: number;
+  id: number;
   title: string;
   content: string;
   created_at: string;
@@ -50,8 +50,8 @@ export default function SearchPage() {
     try {
       const response = await searchAPI.searchNotes(searchQuery);
       
-      if (response.data) {
-        setSearchResults(response.data);
+      if (response.notes) {
+        setSearchResults(response.notes);
       } else {
         setSearchResults([]);
       }
@@ -125,8 +125,8 @@ export default function SearchPage() {
           ) : (
             searchResults.map((result) => (
               <div
-                key={result.note_id}
-                onClick={() => router.push(`/note/${result.note_id}`)}
+                key={result.id}
+                onClick={() => router.push(`/note/${result.id}`)}
                 className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border border-gray-200"
               >
                 <div className="flex items-start justify-between mb-2">

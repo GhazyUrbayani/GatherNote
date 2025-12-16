@@ -36,9 +36,10 @@ export const authAPI = {
       body: JSON.stringify({ email, password })
     });
     const data = await response.json();
-    if (data.token) {
+    if (data.token && data.user) {
       localStorage.setItem('token', data.token);
-      localStorage.setItem('userId', data.userId);
+      localStorage.setItem('userId', data.user.id.toString());
+      localStorage.setItem('userName', data.user.name);
     }
     return data;
   },
@@ -65,20 +66,20 @@ export const folderAPI = {
     return response.json();
   },
 
-  create: async (name: string, topic: string) => {
+  create: async (name: string, description: string) => {
     const response = await fetch(`${API_BASE_URL}/folders`, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ name, topic })
+      body: JSON.stringify({ name, description })
     });
     return response.json();
   },
 
-  update: async (folderId: number, name: string, topic: string) => {
+  update: async (folderId: number, name: string, description: string) => {
     const response = await fetch(`${API_BASE_URL}/folders/${folderId}`, {
       method: 'PUT',
       headers: getHeaders(),
-      body: JSON.stringify({ name, topic })
+      body: JSON.stringify({ name, description })
     });
     return response.json();
   },
@@ -210,27 +211,19 @@ export const aiAPI = {
 // ==================== USER API ====================
 export const userAPI = {
   getProfile: async () => {
-    const response = await fetch(`${API_BASE_URL}/users/profile`, {
+    const response = await fetch(`${API_BASE_URL}/users/me`, {
       headers: getHeaders()
     });
     return response.json();
   },
 
-  updateProfile: async (username: string, email: string) => {
-    const response = await fetch(`${API_BASE_URL}/users/profile`, {
+  updateProfile: async (name: string, avatar_url?: string) => {
+    const response = await fetch(`${API_BASE_URL}/users/me`, {
       method: 'PUT',
       headers: getHeaders(),
-      body: JSON.stringify({ username, email })
+      body: JSON.stringify({ name, avatar_url })
     });
     return response.json();
-  },
 
-  changePassword: async (oldPassword: string, newPassword: string) => {
-    const response = await fetch(`${API_BASE_URL}/users/password`, {
-      method: 'PUT',
-      headers: getHeaders(),
-      body: JSON.stringify({ old_password: oldPassword, new_password: newPassword })
-    });
-    return response.json();
   }
 };

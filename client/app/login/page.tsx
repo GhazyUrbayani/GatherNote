@@ -146,12 +146,15 @@ export default function LoginPage() {
         {/* Demo Credentials Info */}
         {isLogin && (
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs text-gray-600 font-semibold mb-2">Demo Accounts:</p>
+            <p className="text-xs text-gray-600 font-semibold mb-2">Demo Accounts (Real DB Data):</p>
             <div className="text-xs text-gray-600 space-y-1">
-              <p>• daffa_student@example.com / password123</p>
-              <p>• azzam@example.com / password123</p>
-              <p>• siti@example.com / password123</p>
+              <p>• <strong>daffa@itb.ac.id</strong> / password123</p>
+              <p>• <strong>azzam@itb.ac.id</strong> / password123</p>
+              <p>• <strong>siti@itb.ac.id</strong> / password123</p>
             </div>
+            <p className="text-xs text-gray-500 mt-2 italic">
+              * Username: daffa_student, azzam_mahasiswa, siti_scholar
+            </p>
           </div>
         )}
       </div>
