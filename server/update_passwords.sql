@@ -9,9 +9,9 @@ WHERE email IN (
         'azzam@itb.ac.id',
         'siti@itb.ac.id'
     );
--- Verifikasi hasil
-SELECT id,
-    name,
+-- Verifikasi hasil (gunakan nama kolom lama untuk kompatibilitas)
+SELECT user_id,
+    username,
     email,
     LEFT(password_hash, 20) as password_preview
 FROM users
