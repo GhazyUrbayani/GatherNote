@@ -76,11 +76,15 @@ const getGroups = async (req, res) => {
     .where(eq(groupMembers.user_id, req.user.userId))
     .orderBy(desc(groupMembers.joined_at));
 
-    const groupsList = memberships.map(m => ({
-      ...m.group,
-      my_role: m.role,
-      joined_at: m.joined_at
-    }));
+    const groupsList = memberships.map(m => {
+      const groupData = typeof m.group === 'string' ? JSON.parse(m.group) : m.group;
+      return {
+        ...groupData,
+        _count: groupData.member_count,
+        my_role: m.role,
+        joined_at: m.joined_at
+      };
+    });
 
     res.json({ groups: groupsList });
 

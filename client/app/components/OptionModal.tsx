@@ -23,13 +23,19 @@ export default function OptionModal({ isOpen, onClose, title, folderId, isPinned
     
     try {
       setLoading(true);
-      await folderAPI.togglePin(folderId, !isPinned);
+      const response = await folderAPI.togglePin(folderId, !isPinned);
+      
+      if (response.error) {
+        alert(response.message || 'Failed to update folder');
+        setLoading(false);
+        return;
+      }
+      
       if (onUpdate) onUpdate();
       onClose();
     } catch (error) {
       console.error('Error toggling pin:', error);
-      alert('Failed to update folder');
-    } finally {
+      alert('Failed to update folder. Please try again.');
       setLoading(false);
     }
   };
@@ -41,19 +47,20 @@ export default function OptionModal({ isOpen, onClose, title, folderId, isPinned
     
     try {
       setLoading(true);
-      const result = await folderAPI.delete(folderId);
+      const response = await folderAPI.delete(folderId);
       
-      if (result.error) {
-        alert(result.message || 'Failed to delete folder');
+      if (response.error) {
+        alert(response.message || 'Failed to delete folder');
+        setLoading(false);
         return;
       }
       
+      alert('Folder deleted successfully!');
       if (onUpdate) onUpdate();
       onClose();
     } catch (error) {
       console.error('Error deleting folder:', error);
-      alert('Failed to delete folder');
-    } finally {
+      alert('Failed to delete folder. Please try again.');
       setLoading(false);
     }
   };
