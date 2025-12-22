@@ -4,6 +4,19 @@
 -- IMPORTANT: Backup database dulu!
 -- mysqldump -u root -p gathernote_db > backup.sql
 USE gathernote_db;
+-- STEP 1: Update data dulu sebelum mengubah struktur
+-- Convert enum values dari lowercase ke uppercase
+UPDATE notes
+SET note_status = 'UNSTARTED'
+WHERE note_status = 'unstarted';
+UPDATE notes
+SET note_status = 'ONGOING'
+WHERE note_status = 'ongoing';
+UPDATE notes
+SET note_status = 'ARCHIVED'
+WHERE note_status = 'completed'
+    OR note_status = 'archived';
+-- STEP 2: Ubah struktur kolom
 -- 1. UPDATE TABEL NOTES - Ubah note_status jadi status (uppercase enum)
 ALTER TABLE notes CHANGE note_status status ENUM('UNSTARTED', 'ONGOING', 'ARCHIVED') DEFAULT 'UNSTARTED';
 -- 2. UPDATE TABEL NOTES - Ubah note_visibility jadi visibility
