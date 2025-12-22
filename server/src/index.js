@@ -13,6 +13,8 @@ const noteRoutes = require('./routes/note.routes');
 const groupRoutes = require('./routes/group.routes');
 const sharingRoutes = require('./routes/sharing.routes');
 const aiRoutes = require('./routes/ai.routes');
+const docsRoutes = require('./routes/docs.routes');
+const demoRoutes = require('./routes/demo.routes');
 
 const app = express();
 const PORT = process.env.PORT || 7004;
@@ -29,11 +31,17 @@ app.get('/', (req, res) => {
   res.json({
     message: 'GatherNote API v1',
     status: 'running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    documentation: '/api/v1/docs',
+    demo: '/api/v1/demo'
   });
 });
 
-// API Routes
+// PUBLIC ENDPOINTS (NO AUTH REQUIRED)
+app.use('/api/v1/docs', docsRoutes);
+app.use('/api/v1/demo', demoRoutes);
+
+// API Routes (AUTH REQUIRED)
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/search', searchRoutes);
