@@ -61,6 +61,13 @@ export const folderAPI = {
     return response.json();
   },
 
+  getPinned: async () => {
+    const response = await fetch(`${API_BASE_URL}/folders/pinned`, {
+      headers: getHeaders()
+    });
+    return response.json();
+  },
+
   getById: async (folderId: number) => {
     const response = await fetch(`${API_BASE_URL}/folders/${folderId}`, {
       headers: getHeaders()

@@ -74,6 +74,38 @@ const getFolders = async (req, res) => {
 };
 
 /**
+ * Get pinned folders for current user
+ * GET /api/v1/folders/pinned
+ */
+const getPinnedFolders = async (req, res) => {
+  try {
+    const pinnedFoldersList = await db.select({
+      id: folders.id,
+      owner_id: folders.owner_id,
+      name: folders.name,
+      description: folders.description,
+      color: folders.color,
+      icon: folders.icon,
+      is_pinned: folders.is_pinned,
+      created_at: folders.created_at,
+      _count: sql`(SELECT COUNT(*) FROM ${notes} WHERE ${notes.folder_id} = ${folders.id})`
+    })
+    .from(folders)
+    .where(and(eq(folders.owner_id, req.user.userId), eq(folders.is_pinned, true)))
+    .orderBy(desc(folders.created_at));
+
+    res.json({ folders: pinnedFoldersList });
+
+  } catch (error) {
+    console.error('Get pinned folders error:', error);
+    res.status(500).json({
+      error: 'Server error',
+      message: 'Failed to get pinned folders'
+    });
+  }
+};
+
+/**
  * Get folder details with notes
  * GET /api/v1/folders/:id
  */
@@ -205,6 +237,7 @@ const deleteFolder = async (req, res) => {
 module.exports = {
   createFolder,
   getFolders,
+  getPinnedFolders,
   getFolderById,
   updateFolder,
   deleteFolder

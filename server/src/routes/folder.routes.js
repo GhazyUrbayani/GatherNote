@@ -12,6 +12,9 @@ router.post('/', folderController.createFolder);
 // GET /api/v1/folders
 router.get('/', folderController.getFolders);
 
+// GET /api/v1/folders/pinned
+router.get('/pinned', folderController.getPinnedFolders);
+
 // GET /api/v1/folders/:id
 router.get('/:id', folderController.getFolderById);
 

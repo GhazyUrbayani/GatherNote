@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Search, FolderOpen, Users, LogOut, Settings, Heart } from 'lucide-react';
+import { LayoutDashboard, Search, FolderOpen, Users, LogOut, Settings, Heart, Pin } from 'lucide-react';
 import SettingsModal from './SettingsModal';
 import { authAPI } from '../lib/api';
 
@@ -54,6 +54,14 @@ export default function Sidebar() {
           active={isActive('/folders')} 
           onClick={() => router.push('/folders')} 
           tooltip="My Folders"
+        />
+
+        {/* Pinned Folders */}
+        <NavItem 
+          icon={<Pin size={24} />} 
+          active={isActive('/pinned')} 
+          onClick={() => router.push('/pinned')} 
+          tooltip="Pinned Folders"
         />
 
         {/* Groups */}
