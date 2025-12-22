@@ -9,7 +9,8 @@ interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   userProfile?: {
-    user_id: number;
+    id?: number;
+    user_id?: number;
     name: string;
     email: string;
   } | null;
@@ -97,7 +98,7 @@ export default function ProfileModal({ isOpen, onClose, userProfile, onProfileUp
             </label>
             <input
               type="text"
-              value={userProfile?.user_id || ''}
+              value={userProfile?.user_id || userProfile?.id || ''}
               className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 text-gray-500 outline-none"
               disabled
             />
