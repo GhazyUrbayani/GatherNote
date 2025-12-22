@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Search, FolderOpen, Users, LogOut, Settings } from 'lucide-react';
 import SettingsModal from './SettingsModal';
+import { authAPI } from '../lib/api';
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -11,6 +12,11 @@ export default function Sidebar() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const isActive = (path: string) => pathname === path;
+
+  const handleLogout = () => {
+    authAPI.logout();
+    window.location.href = '/login';
+  };
 
   return (
     <div className="h-screen w-20 bg-[#1E3A8A] flex flex-col items-center py-6 fixed left-0 top-0 text-white z-50 shadow-xl">
@@ -68,7 +74,11 @@ export default function Sidebar() {
           tooltip="Settings"
         />
         
-        <button className="p-3 hover:bg-red-500/80 rounded-xl transition flex justify-center text-white/70 hover:text-white cursor-pointer" title="Logout">
+        <button 
+          onClick={handleLogout}
+          className="p-3 hover:bg-red-500/80 rounded-xl transition flex justify-center text-white/70 hover:text-white cursor-pointer" 
+          title="Logout"
+        >
           <LogOut size={24} />
         </button>
       </div>
