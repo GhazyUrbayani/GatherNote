@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Search, FolderOpen, Users, LogOut, Settings } from 'lucide-react';
+import { LayoutDashboard, Search, FolderOpen, Users, LogOut, Settings, Heart } from 'lucide-react';
 import SettingsModal from './SettingsModal';
 import { authAPI } from '../lib/api';
 
@@ -62,6 +62,14 @@ export default function Sidebar() {
           active={isActive('/groups')} 
           onClick={() => router.push('/groups')} 
           tooltip="Community Groups"
+        />
+
+        {/* CrowdFunding (External API) */}
+        <NavItem 
+          icon={<Heart size={24} />} 
+          active={isActive('/crowdfunding')} 
+          onClick={() => router.push('/crowdfunding')} 
+          tooltip="CrowdFunding"
         />
 
       </div>

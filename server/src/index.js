@@ -15,6 +15,7 @@ const sharingRoutes = require('./routes/sharing.routes');
 const aiRoutes = require('./routes/ai.routes');
 const docsRoutes = require('./routes/docs.routes');
 const demoRoutes = require('./routes/demo.routes');
+const integrationRoutes = require('./routes/integration.routes');
 
 const app = express();
 const PORT = process.env.PORT || 7004;
@@ -33,13 +34,15 @@ app.get('/', (req, res) => {
     status: 'running',
     timestamp: new Date().toISOString(),
     documentation: '/api/v1/docs',
-    demo: '/api/v1/demo'
+    demo: '/api/v1/demo',
+    integration: '/api/v1/integration'
   });
 });
 
 // PUBLIC ENDPOINTS (NO AUTH REQUIRED)
 app.use('/api/v1/docs', docsRoutes);
 app.use('/api/v1/demo', demoRoutes);
+app.use('/api/v1/integration', integrationRoutes);
 
 // API Routes (AUTH REQUIRED)
 app.use('/api/v1/auth', authRoutes);

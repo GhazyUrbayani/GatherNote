@@ -238,3 +238,37 @@ export const userAPI = {
 
   }
 };
+
+// ==================== INTEGRATION API (External CrowdFunding) ====================
+export const integrationAPI = {
+  // Get campaigns from external CrowdFunding API
+  getCampaigns: async (type?: string) => {
+    const query = type ? `?type=${type}` : '';
+    const response = await fetch(`${API_BASE_URL}/integration/campaigns${query}`);
+    return response.json();
+  },
+
+  // Get campaign detail
+  getCampaignDetail: async (id: number) => {
+    const response = await fetch(`${API_BASE_URL}/integration/campaigns/${id}`);
+    return response.json();
+  },
+
+  // Get categories from external API
+  getCategories: async () => {
+    const response = await fetch(`${API_BASE_URL}/integration/categories`);
+    return response.json();
+  },
+
+  // Get user profile/badges from external API
+  getUserProfile: async (userId: number) => {
+    const response = await fetch(`${API_BASE_URL}/integration/users/${userId}/profile`);
+    return response.json();
+  },
+
+  // Get donations from external API
+  getDonations: async () => {
+    const response = await fetch(`${API_BASE_URL}/integration/donations`);
+    return response.json();
+  }
+};
