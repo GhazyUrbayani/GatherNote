@@ -77,11 +77,11 @@ export const folderAPI = {
     return response.json();
   },
 
-  update: async (folderId: number, name: string, description: string) => {
+  update: async (folderId: number, data: { name?: string, description?: string, is_pinned?: boolean }) => {
     const response = await fetch(`${API_BASE_URL}/folders/${folderId}`, {
       method: 'PUT',
       headers: getHeaders(),
-      body: JSON.stringify({ name, description })
+      body: JSON.stringify(data)
     });
     return response.json();
   },
@@ -90,6 +90,15 @@ export const folderAPI = {
     const response = await fetch(`${API_BASE_URL}/folders/${folderId}`, {
       method: 'DELETE',
       headers: getHeaders()
+    });
+    return response.json();
+  },
+
+  togglePin: async (folderId: number, isPinned: boolean) => {
+    const response = await fetch(`${API_BASE_URL}/folders/${folderId}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ is_pinned: isPinned })
     });
     return response.json();
   }

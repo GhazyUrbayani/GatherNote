@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Share2, MoreVertical, Bold, Italic, Underline, List, AlignLeft, Image as ImageIcon, Save, Sparkles } from 'lucide-react';
-import { aiAPI } from '../../lib/api';
+import { aiAPI, noteAPI } from '../../lib/api';
 
 export default function NoteEditor() {
   const router = useRouter();
@@ -13,9 +13,78 @@ export default function NoteEditor() {
   const [content, setContent] = useState("");
   const [summary, setSummary] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
 
-  console.log("Editing note:", params.id);
+  // Load note data
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    if (params.id) {
+      fetchNote();
+    }
+  }, [params.id, router]);
+
+  const fetchNote = async () => {
+    try {
+      const noteId = parseInt(params.id as string);
+      const response = await noteAPI.getById(noteId);
+      
+      if (response.error) {
+        alert('Failed to load note');
+        router.back();
+        return;
+      }
+
+      if (response.note) {
+        setTitle(response.note.title || "Untitled Note");
+        setContent(response.note.content || "");
+      }
+    } catch (error) {
+      console.error('Error fetching note:', error);
+      alert('Failed to load note');
+      router.back();
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveStatus('saving');
+
+    try {
+      const noteId = parseInt(params.id as string);
+      const response = await noteAPI.update(noteId, title, content);
+      
+      if (response.error) {
+        setSaveStatus('error');
+        alert('Failed to save note');
+      } else {
+        setSaveStatus('saved');
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      setSaveStatus('error');
+      alert('Failed to save note');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Auto-save after 2 seconds of no typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (title || content) {
+        handleSave();
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [title, content]);
 
   const handleSummarize = async () => {
     if (content.length < 50) {
@@ -67,9 +136,34 @@ export default function NoteEditor() {
           />
           
           {/* Save Status Indicator */}
-          <span className="text-xs text-gray-400 flex items-center gap-1">
-            <Save size={12} /> Saved
+          <span className="text-xs flex items-center gap-1">
+            {saveStatus === 'saving' && (
+              <>
+                <Save size={12} className="animate-pulse text-blue-500" />
+                <span className="text-blue-500">Saving...</span>
+              </>
+            )}
+            {saveStatus === 'saved' && (
+              <>
+                <Save size={12} className="text-green-500" />
+                <span className="text-green-500">Saved</span>
+              </>
+            )}
+            {saveStatus === 'error' && (
+              <>
+                <Save size={12} className="text-red-500" />
+                <span className="text-red-500">Error</span>
+              </>
+            )}
           </span>
+          
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-4 py-2 bg-[#1E3A8A] text-white rounded-lg hover:bg-[#1E3A8A]/90 transition text-sm font-semibold cursor-pointer disabled:opacity-50"
+          >
+            {isSaving ? 'Saving...' : 'Save Now'}
+          </button>
         </div>
 
         {/* Action Buttons (Share & More) */}

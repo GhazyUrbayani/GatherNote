@@ -1,16 +1,62 @@
 'use client';
 
+import { useState } from 'react';
 import { Pin, Trash2, X } from 'lucide-react';
+import { folderAPI } from '../lib/api';
 
 interface OptionModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  folderId?: number;
   isPinned?: boolean;
+  onUpdate?: () => void;
 }
 
-export default function OptionModal({ isOpen, onClose, title, isPinned = false }: OptionModalProps) {
+export default function OptionModal({ isOpen, onClose, title, folderId, isPinned = false, onUpdate }: OptionModalProps) {
+  const [loading, setLoading] = useState(false);
+
   if (!isOpen) return null;
+
+  const handlePin = async () => {
+    if (!folderId) return;
+    
+    try {
+      setLoading(true);
+      await folderAPI.togglePin(folderId, !isPinned);
+      if (onUpdate) onUpdate();
+      onClose();
+    } catch (error) {
+      console.error('Error toggling pin:', error);
+      alert('Failed to update folder');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!folderId) return;
+    
+    if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
+    
+    try {
+      setLoading(true);
+      const result = await folderAPI.delete(folderId);
+      
+      if (result.error) {
+        alert(result.message || 'Failed to delete folder');
+        return;
+      }
+      
+      if (onUpdate) onUpdate();
+      onClose();
+    } catch (error) {
+      console.error('Error deleting folder:', error);
+      alert('Failed to delete folder');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     // Overlay transparan
@@ -39,11 +85,9 @@ export default function OptionModal({ isOpen, onClose, title, isPinned = false }
         <div className="flex flex-col gap-3">
             {/* Tombol PIN */}
             <button 
-                onClick={() => { 
-                  alert(`Changed Pin status for: ${title}`); 
-                  onClose(); 
-                }}
-                className="flex items-center gap-4 w-full p-3 rounded-xl hover:bg-[#F5F8FF] transition text-[#1E3A8A] font-bold text-left cursor-pointer"
+                onClick={handlePin}
+                disabled={loading}
+                className="flex items-center gap-4 w-full p-3 rounded-xl hover:bg-[#F5F8FF] transition text-[#1E3A8A] font-bold text-left cursor-pointer disabled:opacity-50"
             >
                 <Pin size={20} className={isPinned ? "fill-[#1E3A8A]" : ""} />
                 {isPinned ? "Unpin Folder" : "Pin Folder"}
@@ -51,13 +95,9 @@ export default function OptionModal({ isOpen, onClose, title, isPinned = false }
 
             {/* Tombol DELETE */}
             <button 
-                onClick={() => { 
-                  if (confirm(`Are you sure you want to delete "${title}"?`)) {
-                    alert(`Folder deleted: ${title}`); 
-                    onClose();
-                  }
-                }}
-                className="flex items-center gap-4 w-full p-3 rounded-xl hover:bg-red-50 transition text-red-500 font-bold text-left cursor-pointer"
+                onClick={handleDelete}
+                disabled={loading}
+                className="flex items-center gap-4 w-full p-3 rounded-xl hover:bg-red-50 transition text-red-500 font-bold text-left cursor-pointer disabled:opacity-50"
             >
                 <Trash2 size={20} />
                 Delete Folder

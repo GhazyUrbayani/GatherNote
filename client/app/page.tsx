@@ -35,7 +35,7 @@ export default function Home() {
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [optionData, setOptionData] = useState({ isOpen: false, title: '', isPinned: false });
+  const [optionData, setOptionData] = useState({ isOpen: false, title: '', folderId: 0, isPinned: false });
   const [folders, setFolders] = useState<Folder[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -212,7 +212,7 @@ export default function Home() {
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      setOptionData({ isOpen: true, title: folder.name, isPinned: folder.is_pinned });
+                      setOptionData({ isOpen: true, title: folder.name, folderId: folder.id, isPinned: folder.is_pinned });
                     }}
                     className="absolute top-4 right-4 p-2 hover:bg-white/50 rounded-full transition opacity-0 group-hover:opacity-100 cursor-pointer"
                   >
@@ -255,9 +255,11 @@ export default function Home() {
       />
       <OptionModal 
         isOpen={optionData.isOpen} 
-        onClose={() => setOptionData({ isOpen: false, title: '', isPinned: false })} 
+        onClose={() => setOptionData({ isOpen: false, title: '', folderId: 0, isPinned: false })} 
         title={optionData.title}
+        folderId={optionData.folderId}
         isPinned={optionData.isPinned}
+        onUpdate={fetchData}
       />
     </div>
   );

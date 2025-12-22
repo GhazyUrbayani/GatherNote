@@ -1,13 +1,63 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { X, User, Shield, Bell as BellIcon } from 'lucide-react';
+import { userAPI } from '../lib/api';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onUpdate?: () => void;
 }
 
-export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+export default function SettingsModal({ isOpen, onClose, onUpdate }: SettingsModalProps) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailNotifs, setEmailNotifs] = useState(true);
+  const [groupUpdates, setGroupUpdates] = useState(true);
+  const [publicProfile, setPublicProfile] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Load user profile when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchProfile();
+    }
+  }, [isOpen]);
+
+  const fetchProfile = async () => {
+    try {
+      const response = await userAPI.getProfile();
+      if (response.user) {
+        setName(response.user.name || '');
+        setEmail(response.user.email || '');
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const response = await userAPI.updateProfile(name);
+      
+      if (response.error) {
+        alert('Failed to save settings');
+        return;
+      }
+
+      alert('Settings saved successfully!');
+      if (onUpdate) onUpdate();
+      onClose();
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Failed to save settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -34,7 +84,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Name</label>
                 <input 
                   type="text" 
-                  defaultValue="John Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="w-full bg-gray-50 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] text-gray-800"
                 />
               </div>
@@ -42,9 +93,11 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Email</label>
                 <input 
                   type="email" 
-                  defaultValue="john@example.com"
-                  className="w-full bg-gray-50 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] text-gray-800"
+                  value={email}
+                  disabled
+                  className="w-full bg-gray-100 px-4 py-3 rounded-xl text-gray-500 cursor-not-allowed"
                 />
+                <p className="text-xs text-gray-500 mt-1">Email tidak dapat diubah</p>
               </div>
             </div>
           </div>
@@ -58,11 +111,21 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <div className="space-y-3">
               <label className="flex items-center justify-between cursor-pointer">
                 <span className="text-gray-700">Email notifications</span>
-                <input type="checkbox" defaultChecked className="w-5 h-5 text-[#1E3A8A] rounded focus:ring-[#1E3A8A] cursor-pointer" />
+                <input 
+                  type="checkbox" 
+                  checked={emailNotifs}
+                  onChange={(e) => setEmailNotifs(e.target.checked)}
+                  className="w-5 h-5 text-[#1E3A8A] rounded focus:ring-[#1E3A8A] cursor-pointer" 
+                />
               </label>
               <label className="flex items-center justify-between cursor-pointer">
                 <span className="text-gray-700">Group updates</span>
-                <input type="checkbox" defaultChecked className="w-5 h-5 text-[#1E3A8A] rounded focus:ring-[#1E3A8A] cursor-pointer" />
+                <input 
+                  type="checkbox" 
+                  checked={groupUpdates}
+                  onChange={(e) => setGroupUpdates(e.target.checked)}
+                  className="w-5 h-5 text-[#1E3A8A] rounded focus:ring-[#1E3A8A] cursor-pointer" 
+                />
               </label>
             </div>
           </div>
@@ -76,7 +139,12 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <div className="space-y-3">
               <label className="flex items-center justify-between cursor-pointer">
                 <span className="text-gray-700">Make profile public</span>
-                <input type="checkbox" className="w-5 h-5 text-[#1E3A8A] rounded focus:ring-[#1E3A8A] cursor-pointer" />
+                <input 
+                  type="checkbox" 
+                  checked={publicProfile}
+                  onChange={(e) => setPublicProfile(e.target.checked)}
+                  className="w-5 h-5 text-[#1E3A8A] rounded focus:ring-[#1E3A8A] cursor-pointer" 
+                />
               </label>
             </div>
           </div>

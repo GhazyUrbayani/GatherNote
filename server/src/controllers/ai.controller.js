@@ -16,8 +16,8 @@ const summarizeNote = async (req, res) => {
       });
     }
 
-    // 2. Pilih Model AI (Gemini Pro - Teks)
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // 2. Pilih Model AI (Gemini 1.5 Flash - model yang tersedia)
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // 3. Prompt Engineering (Instruksi Rahasia agar hasil bagus)
     const languageInstruction = language === 'en' 
@@ -50,7 +50,7 @@ const summarizeNote = async (req, res) => {
       data: {
         original_length: content.length,
         summary: summaryText,
-        ai_model: "gemini-pro",
+        ai_model: "gemini-1.5-flash",
         timestamp: new Date()
       }
     });

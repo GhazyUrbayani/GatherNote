@@ -12,7 +12,7 @@ interface Group {
   id: number;
   name: string;
   description: string;
-  group_code: string;
+  join_code: string;
   created_at: string;
   _count: number;
 }
@@ -128,7 +128,7 @@ export default function GroupsPage() {
                     <Users size={16} />
                     <span>{group._count || 0} members</span>
                   </div>
-                  <span className="text-xs text-gray-500 font-mono">{group.group_code}</span>
+                  <span className="text-xs text-gray-500 font-mono">{group.join_code}</span>
                 </div>
               </div>
             ))
