@@ -1,7 +1,7 @@
 const { mysqlTable, int, varchar, text, longtext, boolean, datetime, mysqlEnum, unique } = require('drizzle-orm/mysql-core');
 const { relations } = require('drizzle-orm');
 
-// Enums (Uppercase sesuai dengan database)
+// Enums (Uppercase sesuai dengan database baru)
 const noteStatusEnum = mysqlEnum('note_status', ['UNSTARTED', 'ONGOING', 'ARCHIVED']); 
 const noteVisibilityEnum = mysqlEnum('note_visibility', ['private', 'public', 'group']);
 
