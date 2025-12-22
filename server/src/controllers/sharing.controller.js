@@ -36,7 +36,7 @@ const setVisibility = async (req, res) => {
 
     // Update visibility
     await db.update(notes)
-      .set({ visibility: visibility.toUpperCase(), updated_at: new Date() })
+      .set({ note_visibility: visibility.toUpperCase(), updated_at: new Date() })
       .where(eq(notes.id, parseInt(id)));
 
     const [updatedNote] = await db.select().from(notes).where(eq(notes.id, parseInt(id)));

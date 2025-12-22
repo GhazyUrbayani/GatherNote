@@ -34,11 +34,11 @@ const notes = mysqlTable('notes', {
   folder_id: int('folder_id'),
   title: varchar('title', { length: 500 }).notNull(),
   content: longtext('content'),
-  status: noteStatusEnum.notNull().default('UNSTARTED'),
+  note_status: noteStatusEnum.notNull().default('UNSTARTED'),
   priority: varchar('priority', { length: 50 }),
   progress: int('progress'),
   is_favorite: boolean('is_favorite').notNull().default(false),
-  visibility: noteVisibilityEnum.notNull().default('private'),
+  note_visibility: noteVisibilityEnum.notNull().default('private'),
   created_at: datetime('created_at').notNull().default(new Date()),
   updated_at: datetime('updated_at').notNull().default(new Date()),
 });

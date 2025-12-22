@@ -37,7 +37,7 @@ const searchNotes = async (req, res) => {
       id: notes.id,
       title: notes.title,
       content: notes.content,
-      status: notes.status,
+      status: notes.note_status,
       is_favorite: notes.is_favorite,
       created_at: notes.created_at,
       updated_at: notes.updated_at,

@@ -21,7 +21,7 @@ const createNote = async (req, res) => {
       owner_id: req.user.userId,
       title: title.trim(),
       content: content || '',
-      status: status || 'UNSTARTED'
+      note_status: status || 'UNSTARTED'
     };
 
     if (folder_id) noteData.folder_id = parseInt(folder_id);
@@ -36,11 +36,11 @@ const createNote = async (req, res) => {
       folder_id: notes.folder_id,
       title: notes.title,
       content: notes.content,
-      status: notes.status,
+      status: notes.note_status,
       priority: notes.priority,
       progress: notes.progress,
       is_favorite: notes.is_favorite,
-      visibility: notes.visibility,
+      visibility: notes.note_visibility,
       created_at: notes.created_at,
       updated_at: notes.updated_at,
       owner: {
@@ -85,7 +85,7 @@ const getNotes = async (req, res) => {
     const conditions = [eq(notes.owner_id, req.user.userId)];
 
     if (status) {
-      conditions.push(eq(notes.status, status.toUpperCase()));
+      conditions.push(eq(notes.note_status, status.toUpperCase()));
     }
 
     if (folder_id) {
@@ -108,11 +108,11 @@ const getNotes = async (req, res) => {
       folder_id: notes.folder_id,
       title: notes.title,
       content: notes.content,
-      status: notes.status,
+      status: notes.note_status,
       priority: notes.priority,
       progress: notes.progress,
       is_favorite: notes.is_favorite,
-      visibility: notes.visibility,
+      visibility: notes.note_visibility,
       created_at: notes.created_at,
       updated_at: notes.updated_at,
       folder: sql`JSON_OBJECT('id', ${folders.id}, 'name', ${folders.name}, 'color', ${folders.color})`
@@ -147,11 +147,11 @@ const getNoteById = async (req, res) => {
       folder_id: notes.folder_id,
       title: notes.title,
       content: notes.content,
-      status: notes.status,
+      status: notes.note_status,
       priority: notes.priority,
       progress: notes.progress,
       is_favorite: notes.is_favorite,
-      visibility: notes.visibility,
+      visibility: notes.note_visibility,
       created_at: notes.created_at,
       updated_at: notes.updated_at,
       owner: sql`JSON_OBJECT('id', ${users.id}, 'name', ${users.name}, 'avatar_url', ${users.avatar_url})`,
@@ -206,7 +206,7 @@ const updateNote = async (req, res) => {
     const updateData = { updated_at: new Date() };
     if (title) updateData.title = title.trim();
     if (content !== undefined) updateData.content = content;
-    if (status) updateData.status = status.toUpperCase();
+    if (status) updateData.note_status = status.toUpperCase();
     if (priority !== undefined) updateData.priority = priority;
     if (progress !== undefined) updateData.progress = parseInt(progress);
 
@@ -221,11 +221,11 @@ const updateNote = async (req, res) => {
       folder_id: notes.folder_id,
       title: notes.title,
       content: notes.content,
-      status: notes.status,
+      status: notes.note_status,
       priority: notes.priority,
       progress: notes.progress,
       is_favorite: notes.is_favorite,
-      visibility: notes.visibility,
+      visibility: notes.note_visibility,
       created_at: notes.created_at,
       updated_at: notes.updated_at,
       folder: sql`JSON_OBJECT('id', ${folders.id}, 'name', ${folders.name}, 'color', ${folders.color})`
@@ -370,7 +370,7 @@ const moveNote = async (req, res) => {
       updateData.folder_id = folder_id ? parseInt(folder_id) : null;
     }
     if (status) {
-      updateData.status = status.toUpperCase();
+      updateData.note_status = status.toUpperCase();
     }
 
     await db.update(notes)
@@ -384,11 +384,11 @@ const moveNote = async (req, res) => {
       folder_id: notes.folder_id,
       title: notes.title,
       content: notes.content,
-      status: notes.status,
+      status: notes.note_status,
       priority: notes.priority,
       progress: notes.progress,
       is_favorite: notes.is_favorite,
-      visibility: notes.visibility,
+      visibility: notes.note_visibility,
       created_at: notes.created_at,
       updated_at: notes.updated_at,
       folder: sql`JSON_OBJECT('id', ${folders.id}, 'name', ${folders.name}, 'color', ${folders.color})`
