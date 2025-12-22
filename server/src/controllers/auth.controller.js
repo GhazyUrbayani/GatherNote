@@ -11,13 +11,17 @@ const { eq } = require('drizzle-orm');
  */
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    // Terima 'name' atau 'username' untuk fleksibilitas frontend
+    const { name, username, email, password } = req.body;
+
+    // Logika: Kalau 'name' kosong, kita pakai 'username' sebagai gantinya
+    const finalName = name || username;
 
     // Validation
-    if (!name || !email || !password) {
+    if (!finalName || !email || !password) {
       return res.status(400).json({
         error: 'Validation error',
-        message: 'Name, email, and password are required'
+        message: 'Name (or username), email, and password are required'
       });
     }
 
@@ -48,9 +52,9 @@ const register = async (req, res) => {
     // Hash password
     const password_hash = await hashPassword(password);
 
-    // Create user
+    // Create user (pakai finalName yang sudah di-resolve)
     const [newUser] = await db.insert(users).values({
-      name,
+      name: finalName,
       email,
       password_hash
     });
