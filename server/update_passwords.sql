@@ -10,8 +10,8 @@ WHERE email IN (
         'siti@itb.ac.id'
     );
 -- Verifikasi hasil
-SELECT user_id,
-    username,
+SELECT id,
+    name,
     email,
     LEFT(password_hash, 20) as password_preview
 FROM users
