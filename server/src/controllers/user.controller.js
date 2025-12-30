@@ -24,7 +24,7 @@ const getProfile = async (req, res) => {
       });
     }
 
-    res.json({ user });
+    res.json(user);
 
   } catch (error) {
     console.error('Get profile error:', error);
@@ -50,17 +50,8 @@ const updateProfile = async (req, res) => {
 
     await db.update(users).set(updateData).where(eq(users.id, req.user.userId));
 
-    const [user] = await db.select({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      avatar_url: users.avatar_url,
-      created_at: users.created_at
-    }).from(users).where(eq(users.id, req.user.userId));
-
     res.json({
-      message: 'Profile updated successfully',
-      user
+      status: 'updated'
     });
 
   } catch (error) {
