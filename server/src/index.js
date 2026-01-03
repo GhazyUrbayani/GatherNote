@@ -14,7 +14,6 @@ const groupRoutes = require('./routes/group.routes');
 const sharingRoutes = require('./routes/sharing.routes');
 const aiRoutes = require('./routes/ai.routes');
 const docsRoutes = require('./routes/docs.routes');
-const demoRoutes = require('./routes/demo.routes');
 const integrationRoutes = require('./routes/integration.routes');
 
 const app = express();
@@ -34,14 +33,12 @@ app.get('/', (req, res) => {
     status: 'running',
     timestamp: new Date().toISOString(),
     documentation: '/api/v1/docs',
-    demo: '/api/v1/demo',
     integration: '/api/v1/integration'
   });
 });
 
 // PUBLIC ENDPOINTS (NO AUTH REQUIRED)
 app.use('/api/v1/docs', docsRoutes);
-app.use('/api/v1/demo', demoRoutes);
 app.use('/api/v1/integration', integrationRoutes);
 
 // API Routes (AUTH REQUIRED)
@@ -53,7 +50,7 @@ app.use('/api/v1/groups', groupRoutes);
 app.use('/api/v1/ai', aiRoutes);
 
 // [FIX] Load Sharing Routes DULUAN agar tidak tertutup oleh Note Routes
-app.use('/api/v1/notes', sharingRoutes); // Must be BEFORE noteRoutes (more specific)
+app.use('/api/v1/notes', sharingRoutes);
 app.use('/api/v1/notes', noteRoutes);
 
 // 404 handler

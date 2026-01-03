@@ -4,6 +4,31 @@ const { hashPassword } = require('../utils/password.util');
 const { eq } = require('drizzle-orm');
 
 /**
+ * Get all users (public - for integration)
+ * GET /api/v1/users
+ */
+const getAllUsers = async (req, res) => {
+  try {
+    const allUsers = await db.select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      avatar_url: users.avatar_url,
+      created_at: users.created_at
+    }).from(users);
+
+    res.json({ users: allUsers });
+
+  } catch (error) {
+    console.error('Get all users error:', error);
+    res.status(500).json({
+      error: 'Server error',
+      message: 'Failed to get users'
+    });
+  }
+};
+
+/**
  * Get current user profile
  * GET /api/v1/users/me
  */
@@ -64,6 +89,7 @@ const updateProfile = async (req, res) => {
 };
 
 module.exports = {
+  getAllUsers,
   getProfile,
   updateProfile
 };
