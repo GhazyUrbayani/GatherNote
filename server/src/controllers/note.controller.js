@@ -1,6 +1,6 @@
 const db = require('../config/database');
 const { notes, users, folders } = require('../config/schema');
-const { eq, and, desc, asc, sql } = require('drizzle-orm');
+const { eq, and, or, desc, asc, sql } = require('drizzle-orm');
 
 /**
  * Create new note
@@ -82,7 +82,22 @@ const getNotes = async (req, res) => {
     const { sort, status, folder_id } = req.query;
 
     // Build where conditions
-    const conditions = [eq(notes.owner_id, req.user.userId)];
+    const conditions = [];
+
+    // If user is authenticated, show their notes
+    // If not authenticated, show only public notes
+    if (req.user && req.user.userId) {
+      // Authenticated: show user's notes OR public notes
+      conditions.push(
+        or(
+          eq(notes.owner_id, req.user.userId),
+          eq(notes.note_visibility, 'PUBLIC')
+        )
+      );
+    } else {
+      // Not authenticated: show only public notes
+      conditions.push(eq(notes.note_visibility, 'PUBLIC'));
+    }
 
     if (status) {
       conditions.push(eq(notes.note_status, status.toUpperCase()));
@@ -141,6 +156,25 @@ const getNoteById = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Build condition: note must exist AND (user owns it OR note is public)
+    let whereCondition;
+    if (req.user && req.user.userId) {
+      // Authenticated: can see own notes or public notes
+      whereCondition = and(
+        eq(notes.id, parseInt(id)),
+        or(
+          eq(notes.owner_id, req.user.userId),
+          eq(notes.note_visibility, 'PUBLIC')
+        )
+      );
+    } else {
+      // Not authenticated: can only see public notes
+      whereCondition = and(
+        eq(notes.id, parseInt(id)),
+        eq(notes.note_visibility, 'PUBLIC')
+      );
+    }
+
     const [note] = await db.select({
       id: notes.id,
       owner_id: notes.owner_id,
@@ -160,7 +194,7 @@ const getNoteById = async (req, res) => {
     .from(notes)
     .leftJoin(users, eq(notes.owner_id, users.id))
     .leftJoin(folders, eq(notes.folder_id, folders.id))
-    .where(and(eq(notes.id, parseInt(id)), eq(notes.owner_id, req.user.userId)))
+    .where(whereCondition)
     .limit(1);
 
     if (!note) {

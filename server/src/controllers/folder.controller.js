@@ -42,12 +42,12 @@ const createFolder = async (req, res) => {
 };
 
 /**
- * Get all folders for current user
+ * Get all folders for current user (or all folders if no auth for integration)
  * GET /api/v1/folders
  */
 const getFolders = async (req, res) => {
   try {
-    const foldersList = await db.select({
+    let query = db.select({
       id: folders.id,
       owner_id: folders.owner_id,
       name: folders.name,
@@ -58,9 +58,14 @@ const getFolders = async (req, res) => {
       created_at: folders.created_at,
       _count: sql`(SELECT COUNT(*) FROM ${notes} WHERE ${notes.folder_id} = ${folders.id})`
     })
-    .from(folders)
-    .where(eq(folders.owner_id, req.user.userId))
-    .orderBy(desc(folders.is_pinned), desc(folders.created_at));
+    .from(folders);
+
+    // If authenticated, show only user's folders; otherwise show all folders
+    if (req.user && req.user.userId) {
+      query = query.where(eq(folders.owner_id, req.user.userId));
+    }
+
+    const foldersList = await query.orderBy(desc(folders.is_pinned), desc(folders.created_at));
 
     res.json(foldersList);
 
@@ -74,11 +79,18 @@ const getFolders = async (req, res) => {
 };
 
 /**
- * Get pinned folders for current user
+ * Get pinned folders for current user (or all pinned folders if no auth)
  * GET /api/v1/folders/pinned
  */
 const getPinnedFolders = async (req, res) => {
   try {
+    let whereCondition;
+    if (req.user && req.user.userId) {
+      whereCondition = and(eq(folders.owner_id, req.user.userId), eq(folders.is_pinned, true));
+    } else {
+      whereCondition = eq(folders.is_pinned, true);
+    }
+
     const pinnedFoldersList = await db.select({
       id: folders.id,
       owner_id: folders.owner_id,
@@ -91,7 +103,7 @@ const getPinnedFolders = async (req, res) => {
       _count: sql`(SELECT COUNT(*) FROM ${notes} WHERE ${notes.folder_id} = ${folders.id})`
     })
     .from(folders)
-    .where(and(eq(folders.owner_id, req.user.userId), eq(folders.is_pinned, true)))
+    .where(whereCondition)
     .orderBy(desc(folders.created_at));
 
     res.json({ folders: pinnedFoldersList });
@@ -113,8 +125,16 @@ const getFolderById = async (req, res) => {
   try {
     const { id } = req.params;
 
+    let whereCondition;
+    if (req.user && req.user.userId) {
+      whereCondition = and(eq(folders.id, parseInt(id)), eq(folders.owner_id, req.user.userId));
+    } else {
+      // No auth - allow access to any folder (for integration)
+      whereCondition = eq(folders.id, parseInt(id));
+    }
+
     const [folder] = await db.select().from(folders)
-      .where(and(eq(folders.id, parseInt(id)), eq(folders.owner_id, req.user.userId)))
+      .where(whereCondition)
       .limit(1);
 
     if (!folder) {

@@ -59,34 +59,51 @@ const createGroup = async (req, res) => {
 };
 
 /**
- * Get all groups user is a member of
+ * Get all groups user is a member of (or all groups if no auth for integration)
  * GET /api/v1/groups
  */
 const getGroups = async (req, res) => {
   try {
-    const memberships = await db.select({
-      group_id: groupMembers.group_id,
-      user_id: groupMembers.user_id,
-      role: groupMembers.role,
-      joined_at: groupMembers.joined_at,
-      group: sql`JSON_OBJECT('id', ${groups.id}, 'name', ${groups.name}, 'description', ${groups.description}, 'join_code', ${groups.join_code}, 'created_at', ${groups.created_at}, 'member_count', (SELECT COUNT(*) FROM ${groupMembers} gm WHERE gm.group_id = ${groups.id}))`
-    })
-    .from(groupMembers)
-    .leftJoin(groups, eq(groupMembers.group_id, groups.id))
-    .where(eq(groupMembers.user_id, req.user.userId))
-    .orderBy(desc(groupMembers.joined_at));
+    // If authenticated, show user's groups; otherwise show all groups
+    if (req.user && req.user.userId) {
+      const memberships = await db.select({
+        group_id: groupMembers.group_id,
+        user_id: groupMembers.user_id,
+        role: groupMembers.role,
+        joined_at: groupMembers.joined_at,
+        group: sql`JSON_OBJECT('id', ${groups.id}, 'name', ${groups.name}, 'description', ${groups.description}, 'join_code', ${groups.join_code}, 'created_at', ${groups.created_at}, 'member_count', (SELECT COUNT(*) FROM ${groupMembers} gm WHERE gm.group_id = ${groups.id}))`
+      })
+      .from(groupMembers)
+      .leftJoin(groups, eq(groupMembers.group_id, groups.id))
+      .where(eq(groupMembers.user_id, req.user.userId))
+      .orderBy(desc(groupMembers.joined_at));
 
-    const groupsList = memberships.map(m => {
-      const groupData = typeof m.group === 'string' ? JSON.parse(m.group) : m.group;
-      return {
-        ...groupData,
-        _count: groupData.member_count,
-        my_role: m.role,
-        joined_at: m.joined_at
-      };
-    });
+      const groupsList = memberships.map(m => {
+        const groupData = typeof m.group === 'string' ? JSON.parse(m.group) : m.group;
+        return {
+          ...groupData,
+          _count: groupData.member_count,
+          my_role: m.role,
+          joined_at: m.joined_at
+        };
+      });
 
-    res.json(groupsList);
+      return res.json(groupsList);
+    } else {
+      // No auth - return all groups for integration
+      const allGroups = await db.select({
+        id: groups.id,
+        name: groups.name,
+        description: groups.description,
+        join_code: groups.join_code,
+        created_at: groups.created_at,
+        _count: sql`(SELECT COUNT(*) FROM ${groupMembers} gm WHERE gm.group_id = ${groups.id})`
+      })
+      .from(groups)
+      .orderBy(desc(groups.created_at));
+
+      return res.json(allGroups);
+    }
 
   } catch (error) {
     console.error('Get groups error:', error);
@@ -105,17 +122,20 @@ const getGroupById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if user is member
-    const [membership] = await db.select()
-      .from(groupMembers)
-      .where(and(eq(groupMembers.group_id, parseInt(id)), eq(groupMembers.user_id, req.user.userId)))
-      .limit(1);
+    // If authenticated, check membership; if not, allow access for integration
+    if (req.user && req.user.userId) {
+      // Check if user is member
+      const [membership] = await db.select()
+        .from(groupMembers)
+        .where(and(eq(groupMembers.group_id, parseInt(id)), eq(groupMembers.user_id, req.user.userId)))
+        .limit(1);
 
-    if (!membership) {
-      return res.status(403).json({
-        error: 'Forbidden',
-        message: 'You are not a member of this group'
-      });
+      if (!membership) {
+        return res.status(403).json({
+          error: 'Forbidden',
+          message: 'You are not a member of this group'
+        });
+      }
     }
 
     const [group] = await db.select().from(groups).where(eq(groups.id, parseInt(id))).limit(1);
