@@ -85,19 +85,12 @@ const getNotes = async (req, res) => {
     const conditions = [];
 
     // If user is authenticated, show their notes
-    // If not authenticated, show only public notes
+    // If not authenticated, show ALL notes (for integration)
     if (req.user && req.user.userId) {
-      // Authenticated: show user's notes OR public notes
-      conditions.push(
-        or(
-          eq(notes.owner_id, req.user.userId),
-          eq(notes.note_visibility, 'PUBLIC')
-        )
-      );
-    } else {
-      // Not authenticated: show only public notes
-      conditions.push(eq(notes.note_visibility, 'PUBLIC'));
+      // Authenticated: show user's notes only
+      conditions.push(eq(notes.owner_id, req.user.userId));
     }
+    // No conditions added = show all notes for integration
 
     if (status) {
       conditions.push(eq(notes.note_status, status.toUpperCase()));
@@ -134,7 +127,7 @@ const getNotes = async (req, res) => {
     })
     .from(notes)
     .leftJoin(folders, eq(notes.folder_id, folders.id))
-    .where(and(...conditions))
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(notes.is_favorite), ...orderByClause);
 
     res.json(notesList);
@@ -156,23 +149,17 @@ const getNoteById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Build condition: note must exist AND (user owns it OR note is public)
+    // Build condition based on authentication
     let whereCondition;
     if (req.user && req.user.userId) {
-      // Authenticated: can see own notes or public notes
+      // Authenticated: can only see own notes
       whereCondition = and(
         eq(notes.id, parseInt(id)),
-        or(
-          eq(notes.owner_id, req.user.userId),
-          eq(notes.note_visibility, 'PUBLIC')
-        )
+        eq(notes.owner_id, req.user.userId)
       );
     } else {
-      // Not authenticated: can only see public notes
-      whereCondition = and(
-        eq(notes.id, parseInt(id)),
-        eq(notes.note_visibility, 'PUBLIC')
-      );
+      // Not authenticated: can see any note (for integration)
+      whereCondition = eq(notes.id, parseInt(id));
     }
 
     const [note] = await db.select({
