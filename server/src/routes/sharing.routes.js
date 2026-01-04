@@ -16,4 +16,14 @@ router.get('/:id/collaborators', authenticateToken, sharingController.getCollabo
 // DELETE /api/v1/notes/:id/collaborators/:collaboratorId
 router.delete('/:id/collaborators/:collaboratorId', authenticateToken, sharingController.removeCollaborator);
 
+// === SHARE LINK ROUTES ===
+// POST /api/v1/notes/:id/share-link - Generate share link
+router.post('/:id/share-link', authenticateToken, sharingController.generateShareLink);
+
+// GET /api/v1/notes/:id/share-links - Get all share links for a note
+router.get('/:id/share-links', authenticateToken, sharingController.getShareLinks);
+
+// DELETE /api/v1/notes/:id/share-links/:linkId - Revoke share link
+router.delete('/:id/share-links/:linkId', authenticateToken, sharingController.revokeShareLink);
+
 module.exports = router;

@@ -72,6 +72,18 @@ const noteCollaborators = mysqlTable('note_collaborators', {
   uniqueNoteUser: unique().on(table.note_id, table.user_id),
 }));
 
+// 7. Note Share Links table (for share via token)
+const noteShareLinks = mysqlTable('note_share_links', {
+  id: int('id').primaryKey().autoincrement(),
+  note_id: int('note_id').notNull(),
+  share_token: varchar('share_token', { length: 64 }).notNull().unique(),
+  permission: varchar('permission', { length: 50 }).notNull().default('view'), // view, edit
+  expires_at: datetime('expires_at'), // null = never expires
+  is_active: boolean('is_active').notNull().default(true),
+  created_by: int('created_by').notNull(),
+  created_at: datetime('created_at').notNull().default(new Date()),
+});
+
 // --- RELATIONS ---
 const usersRelations = relations(users, ({ many }) => ({
   notes: many(notes),
@@ -133,6 +145,7 @@ module.exports = {
   groups,
   groupMembers,
   noteCollaborators,
+  noteShareLinks,
   usersRelations,
   foldersRelations,
   notesRelations,

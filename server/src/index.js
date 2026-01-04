@@ -41,6 +41,10 @@ app.get('/', (req, res) => {
 app.use('/api/v1/docs', docsRoutes);
 app.use('/api/v1/integration', integrationRoutes);
 
+// PUBLIC sharing endpoint (access note via share token)
+const sharingController = require('./controllers/sharing.controller');
+app.get('/api/v1/sharing/:shareToken', sharingController.getNoteByShareToken);
+
 // API Routes (AUTH REQUIRED)
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);

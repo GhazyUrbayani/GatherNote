@@ -1,7 +1,8 @@
 const db = require('../config/database');
-const { notes, users, noteCollaborators } = require('../config/schema');
-const { isValidEmail } = require('../utils/validator.util');
+const { notes, users, noteCollaborators, noteShareLinks, folders } = require('../config/schema');
+const { isValidEmail, generateCode } = require('../utils/validator.util');
 const { eq, and, or, sql } = require('drizzle-orm');
+const crypto = require('crypto');
 
 /**
  * Set note visibility
@@ -277,9 +278,259 @@ const removeCollaborator = async (req, res) => {
   }
 };
 
+/**
+ * Generate share link for note
+ * POST /api/v1/notes/:id/share-link
+ */
+const generateShareLink = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { permission, expires_in_days } = req.body;
+
+    // Check note ownership
+    const [note] = await db.select()
+      .from(notes)
+      .where(and(eq(notes.id, parseInt(id)), eq(notes.owner_id, req.user.userId)))
+      .limit(1);
+
+    if (!note) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Note not found or you do not have permission'
+      });
+    }
+
+    // Validate permission
+    const validPermissions = ['VIEW', 'EDIT'];
+    const perm = permission ? permission.toUpperCase() : 'VIEW';
+    if (!validPermissions.includes(perm)) {
+      return res.status(400).json({
+        error: 'Validation error',
+        message: 'Valid permission values are: view, edit'
+      });
+    }
+
+    // Generate unique share token
+    const shareToken = crypto.randomBytes(32).toString('hex');
+
+    // Calculate expiration date
+    let expiresAt = null;
+    if (expires_in_days && expires_in_days > 0) {
+      expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + parseInt(expires_in_days));
+    }
+
+    // Create share link
+    const [newLink] = await db.insert(noteShareLinks).values({
+      note_id: parseInt(id),
+      share_token: shareToken,
+      permission: perm,
+      expires_at: expiresAt,
+      created_by: req.user.userId
+    });
+
+    const [shareLink] = await db.select()
+      .from(noteShareLinks)
+      .where(eq(noteShareLinks.id, newLink.insertId));
+
+    res.status(201).json({
+      share_token: shareLink.share_token,
+      permission: shareLink.permission,
+      expires_at: shareLink.expires_at,
+      share_url: `/api/v1/sharing/${shareLink.share_token}`,
+      created_at: shareLink.created_at
+    });
+
+  } catch (error) {
+    console.error('Generate share link error:', error);
+    res.status(500).json({
+      error: 'Server error',
+      message: 'Failed to generate share link'
+    });
+  }
+};
+
+/**
+ * Get note by share token (PUBLIC - NO AUTH REQUIRED)
+ * GET /api/v1/sharing/:shareToken
+ */
+const getNoteByShareToken = async (req, res) => {
+  try {
+    const { shareToken } = req.params;
+
+    // Find share link
+    const [shareLink] = await db.select()
+      .from(noteShareLinks)
+      .where(and(
+        eq(noteShareLinks.share_token, shareToken),
+        eq(noteShareLinks.is_active, true)
+      ))
+      .limit(1);
+
+    if (!shareLink) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Share link not found or has been revoked'
+      });
+    }
+
+    // Check if expired
+    if (shareLink.expires_at && new Date(shareLink.expires_at) < new Date()) {
+      return res.status(410).json({
+        error: 'Expired',
+        message: 'This share link has expired'
+      });
+    }
+
+    // Get note with details
+    const [note] = await db.select({
+      id: notes.id,
+      title: notes.title,
+      content: notes.content,
+      status: notes.note_status,
+      priority: notes.priority,
+      progress: notes.progress,
+      visibility: notes.note_visibility,
+      created_at: notes.created_at,
+      updated_at: notes.updated_at,
+      owner: sql`JSON_OBJECT('id', ${users.id}, 'name', ${users.name}, 'avatar_url', ${users.avatar_url})`,
+      folder: sql`JSON_OBJECT('id', ${folders.id}, 'name', ${folders.name}, 'color', ${folders.color}, 'icon', ${folders.icon})`
+    })
+    .from(notes)
+    .leftJoin(users, eq(notes.owner_id, users.id))
+    .leftJoin(folders, eq(notes.folder_id, folders.id))
+    .where(eq(notes.id, shareLink.note_id))
+    .limit(1);
+
+    if (!note) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Note not found'
+      });
+    }
+
+    res.json({
+      note,
+      share_info: {
+        permission: shareLink.permission,
+        expires_at: shareLink.expires_at
+      }
+    });
+
+  } catch (error) {
+    console.error('Get note by share token error:', error);
+    res.status(500).json({
+      error: 'Server error',
+      message: 'Failed to get shared note'
+    });
+  }
+};
+
+/**
+ * Get all share links for a note
+ * GET /api/v1/notes/:id/share-links
+ */
+const getShareLinks = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check note ownership
+    const [note] = await db.select()
+      .from(notes)
+      .where(and(eq(notes.id, parseInt(id)), eq(notes.owner_id, req.user.userId)))
+      .limit(1);
+
+    if (!note) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Note not found or you do not have permission'
+      });
+    }
+
+    // Get all active share links
+    const links = await db.select({
+      id: noteShareLinks.id,
+      share_token: noteShareLinks.share_token,
+      permission: noteShareLinks.permission,
+      expires_at: noteShareLinks.expires_at,
+      is_active: noteShareLinks.is_active,
+      created_at: noteShareLinks.created_at
+    })
+    .from(noteShareLinks)
+    .where(eq(noteShareLinks.note_id, parseInt(id)));
+
+    res.json({ share_links: links });
+
+  } catch (error) {
+    console.error('Get share links error:', error);
+    res.status(500).json({
+      error: 'Server error',
+      message: 'Failed to get share links'
+    });
+  }
+};
+
+/**
+ * Revoke share link
+ * DELETE /api/v1/notes/:id/share-links/:linkId
+ */
+const revokeShareLink = async (req, res) => {
+  try {
+    const { id, linkId } = req.params;
+
+    // Check note ownership
+    const [note] = await db.select()
+      .from(notes)
+      .where(and(eq(notes.id, parseInt(id)), eq(notes.owner_id, req.user.userId)))
+      .limit(1);
+
+    if (!note) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Note not found or you do not have permission'
+      });
+    }
+
+    // Find and deactivate share link
+    const [link] = await db.select()
+      .from(noteShareLinks)
+      .where(and(
+        eq(noteShareLinks.id, parseInt(linkId)),
+        eq(noteShareLinks.note_id, parseInt(id))
+      ))
+      .limit(1);
+
+    if (!link) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Share link not found'
+      });
+    }
+
+    await db.update(noteShareLinks)
+      .set({ is_active: false })
+      .where(eq(noteShareLinks.id, parseInt(linkId)));
+
+    res.json({
+      status: 'revoked'
+    });
+
+  } catch (error) {
+    console.error('Revoke share link error:', error);
+    res.status(500).json({
+      error: 'Server error',
+      message: 'Failed to revoke share link'
+    });
+  }
+};
+
 module.exports = {
   setVisibility,
   addCollaborator,
   getCollaborators,
-  removeCollaborator
+  removeCollaborator,
+  generateShareLink,
+  getNoteByShareToken,
+  getShareLinks,
+  revokeShareLink
 };
