@@ -88,8 +88,43 @@ const updateProfile = async (req, res) => {
   }
 };
 
+/**
+ * Get user by ID (public - for integration)
+ * GET /api/v1/users/:id
+ */
+const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [user] = await db.select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      avatar_url: users.avatar_url,
+      created_at: users.created_at
+    }).from(users).where(eq(users.id, parseInt(id))).limit(1);
+
+    if (!user) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'User not found'
+      });
+    }
+
+    res.json(user);
+
+  } catch (error) {
+    console.error('Get user by ID error:', error);
+    res.status(500).json({
+      error: 'Server error',
+      message: 'Failed to get user'
+    });
+  }
+};
+
 module.exports = {
   getAllUsers,
   getProfile,
-  updateProfile
+  updateProfile,
+  getUserById
 };

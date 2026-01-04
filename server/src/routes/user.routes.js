@@ -7,6 +7,9 @@ const { authenticateToken, optionalAuth } = require('../middleware/auth.middlewa
 // GET /api/v1/users - List all users (public for integration)
 router.get('/', optionalAuth, userController.getAllUsers);
 
+// GET /api/v1/users/:id - Get user by ID (public for integration)
+router.get('/:id', optionalAuth, userController.getUserById);
+
 // PROTECTED ROUTES (require authentication)
 // GET /api/v1/users/me
 router.get('/me', authenticateToken, userController.getProfile);
