@@ -1,5 +1,10 @@
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7004/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://be.cisitujayafc.web.id/api/v1';
+
+// Log API URL for debugging
+if (typeof window !== 'undefined') {
+  console.log('🔗 API Base URL:', API_BASE_URL);
+}
 
 // Get auth token from localStorage
 const getAuthToken = () => {

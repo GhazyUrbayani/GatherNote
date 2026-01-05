@@ -48,7 +48,8 @@ export default function LoginPage() {
         }
       }
     } catch (err) {
-      setError('Terjadi kesalahan. Pastikan server berjalan di port 7004');
+      console.error('Login/Register error:', err);
+      setError('Terjadi kesalahan. Cek koneksi ke server.');
     } finally {
       setLoading(false);
     }
@@ -125,7 +126,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#1E3A8A] text-white py-3 rounded-lg font-medium hover:bg-[#1E3A8A]/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#1E3A8A] text-white py-3 rounded-lg font-medium hover:bg-[#1E3A8A]/90 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {loading ? 'Memproses...' : isLogin ? 'Masuk' : 'Daftar'}
           </button>
@@ -134,12 +135,13 @@ export default function LoginPage() {
         {/* Toggle Login/Register */}
         <div className="mt-6 text-center">
           <button
+            type="button"
             onClick={() => {
               setIsLogin(!isLogin);
               setError('');
               setFormData({ name: '', email: '', password: '' });
             }}
-            className="text-[#1E3A8A] hover:underline text-sm"
+            className="text-[#1E3A8A] hover:underline text-sm cursor-pointer"
           >
             {isLogin ? 'Belum punya akun? Daftar di sini' : 'Sudah punya akun? Masuk di sini'}
           </button>
