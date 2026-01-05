@@ -36,14 +36,22 @@ export const authAPI = {
       body: JSON.stringify({ email, password })
     });
     const data = await response.json();
+    
+    console.log('Login response:', data);
+    
     if (data.token) {
       localStorage.setItem('token', data.token);
+      
+      // Handle both response formats (with user object or without)
       if (data.user) {
         localStorage.setItem('userId', data.user.id.toString());
         localStorage.setItem('userName', data.user.name);
+        localStorage.setItem('userEmail', data.user.email);
       } else if (data.userId) {
         localStorage.setItem('userId', data.userId.toString());
       }
+      
+      console.log('Token saved to localStorage');
     }
     return data;
   },

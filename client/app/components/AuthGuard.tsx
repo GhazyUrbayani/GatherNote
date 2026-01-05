@@ -6,35 +6,44 @@ import { useRouter, usePathname } from 'next/navigation';
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
+    // Wait for client-side hydration
     const checkAuth = () => {
-      const token = localStorage.getItem('token');
-      const publicPaths = ['/login'];
+      try {
+        const token = localStorage.getItem('token');
+        const publicPaths = ['/login', '/crowdfunding'];
+        const isPublicPath = publicPaths.some(p => pathname.startsWith(p));
 
-      // Jika di halaman public dan sudah login, redirect ke home
-      if (publicPaths.includes(pathname) && token) {
-        router.push('/');
-        return;
+        console.log('AuthGuard check:', { pathname, hasToken: !!token, isPublicPath });
+
+        // Jika di halaman public dan sudah login, redirect ke home
+        if (pathname === '/login' && token) {
+          router.replace('/');
+          return;
+        }
+
+        // Jika di halaman private dan belum login, redirect ke login
+        if (!isPublicPath && !token) {
+          router.replace('/login');
+          return;
+        }
+
+        setIsReady(true);
+      } catch (error) {
+        console.error('AuthGuard error:', error);
+        setIsReady(true);
       }
-
-      // Jika di halaman private dan belum login, redirect ke login
-      if (!publicPaths.includes(pathname) && !token) {
-        router.push('/login');
-        return;
-      }
-
-      setIsAuthenticated(!!token || publicPaths.includes(pathname));
-      setIsLoading(false);
     };
 
-    checkAuth();
+    // Small delay to ensure localStorage is available
+    const timer = setTimeout(checkAuth, 50);
+    return () => clearTimeout(timer);
   }, [pathname, router]);
 
   // Show loading spinner while checking auth
-  if (isLoading) {
+  if (!isReady) {
     return (
       <div className="min-h-screen bg-[#0a1628] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>

@@ -43,18 +43,19 @@ export default function Home() {
 
   // Fetch data dari API
   useEffect(() => {
-    fetchData();
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       
-      const token = localStorage.getItem('token');
-      if (!token) {
-        router.push('/login');
-        return;
-      }
+      console.log('Fetching user data...');
       
       // Fetch user profile dan folders secara paralel
       const [profileRes, foldersRes] = await Promise.all([
@@ -62,28 +63,36 @@ export default function Home() {
         folderAPI.getAll()
       ]);
 
+      console.log('Profile response:', profileRes);
+      console.log('Folders response:', foldersRes);
+
       if (profileRes.error) {
         // Token invalid atau expired
+        console.log('Profile error, clearing token');
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
         localStorage.removeItem('userName');
-        router.push('/login');
+        router.replace('/login');
         return;
       }
 
+      // Set user profile (response is direct user object)
       setUserProfile(profileRes);
       
       // foldersRes is array directly, not { folders: [...] }
       if (Array.isArray(foldersRes)) {
-        // Ambil hanya 3 folder terakhir untuk "Recently Visited"
+        console.log('Setting folders:', foldersRes.length, 'folders found');
         setFolders(foldersRes.slice(0, 3));
-      } else if (foldersRes.folders) {
-        setFolders(foldersRes.folders.slice(0, 3));
+      } else if (foldersRes && !foldersRes.error) {
+        console.log('Folders in different format:', foldersRes);
+        setFolders([]);
+      } else {
+        console.log('No folders or error:', foldersRes);
+        setFolders([]);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      localStorage.removeItem('token');
-      router.push('/login');
+      // Don't clear token on network error, might be temporary
     } finally {
       setLoading(false);
     }

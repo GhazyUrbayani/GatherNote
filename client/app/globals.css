@@ -24,3 +24,19 @@ body {
   color: var(--foreground);
   font-family: 'Radio Canada', sans-serif;
 }
+
+/* Make all clickable elements have pointer cursor */
+button,
+a,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+.clickable {
+  cursor: pointer !important;
+}
+
+/* Also for elements with onClick */
+[onclick],
+.cursor-pointer {
+  cursor: pointer !important;
+}
