@@ -43,18 +43,18 @@ export default function Home() {
 
   // Fetch data dari API
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
     fetchData();
-  }, [router]);
+  }, []);
 
   const fetchData = async () => {
     try {
       setLoading(true);
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
       
       // Fetch user profile dan folders secara paralel
       const [profileRes, foldersRes] = await Promise.all([
@@ -71,10 +71,13 @@ export default function Home() {
         return;
       }
 
-      setUserProfile(profileRes.user);
+      setUserProfile(profileRes);
       
-      if (foldersRes.folders) {
+      // foldersRes is array directly, not { folders: [...] }
+      if (Array.isArray(foldersRes)) {
         // Ambil hanya 3 folder terakhir untuk "Recently Visited"
+        setFolders(foldersRes.slice(0, 3));
+      } else if (foldersRes.folders) {
         setFolders(foldersRes.folders.slice(0, 3));
       }
     } catch (error) {
