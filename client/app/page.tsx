@@ -56,6 +56,8 @@ export default function Home() {
       setLoading(true);
       
       console.log('Fetching user data...');
+      const token = localStorage.getItem('token');
+      console.log('Current token:', token ? token.substring(0, 30) + '...' : 'NO TOKEN');
       
       // Fetch user profile dan folders secara paralel
       const [profileRes, foldersRes] = await Promise.all([
@@ -63,12 +65,12 @@ export default function Home() {
         folderAPI.getAll()
       ]);
 
-      console.log('Profile response:', profileRes);
+      console.log('Profile response:', JSON.stringify(profileRes));
       console.log('Folders response:', foldersRes);
 
       if (profileRes.error) {
         // Token invalid atau expired
-        console.log('Profile error, clearing token');
+        console.log('Profile error, clearing token:', profileRes.error);
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
         localStorage.removeItem('userName');
@@ -76,8 +78,16 @@ export default function Home() {
         return;
       }
 
-      // Set user profile (response is direct user object)
+      // Set user profile (response is direct user object: {id, name, email, avatar_url, created_at})
+      console.log('Setting userProfile to:', profileRes.name, profileRes.email);
       setUserProfile(profileRes);
+      
+      // Update localStorage with latest user info
+      if (profileRes.id) {
+        localStorage.setItem('userId', profileRes.id.toString());
+        localStorage.setItem('userName', profileRes.name);
+        localStorage.setItem('userEmail', profileRes.email);
+      }
       
       // foldersRes is array directly, not { folders: [...] }
       if (Array.isArray(foldersRes)) {

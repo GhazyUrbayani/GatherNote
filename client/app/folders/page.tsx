@@ -40,6 +40,8 @@ export default function FoldersPage() {
       setLoading(true);
       const response = await folderAPI.getAll();
       
+      console.log('Folders response:', response);
+      
       if (response.error) {
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
@@ -48,8 +50,13 @@ export default function FoldersPage() {
         return;
       }
 
-      if (response.folders) {
+      // Handle both array response and { folders: [...] } response
+      if (Array.isArray(response)) {
+        setFolders(response);
+      } else if (response.folders) {
         setFolders(response.folders);
+      } else {
+        setFolders([]);
       }
     } catch (error) {
       console.error('Error fetching folders:', error);

@@ -25,18 +25,95 @@ body {
   font-family: 'Radio Canada', sans-serif;
 }
 
-/* Make all clickable elements have pointer cursor */
+/* Make ALL clickable elements have pointer cursor (jari tangan) */
 button,
 a,
 [role="button"],
+[role="link"],
+[role="tab"],
+[role="menuitem"],
+[role="option"],
+[role="checkbox"],
+[role="radio"],
+[role="switch"],
 input[type="submit"],
 input[type="button"],
-.clickable {
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"],
+input[type="range"],
+select,
+label[for],
+summary,
+.clickable,
+.btn,
+.button,
+.card:hover,
+.hover\:bg-gn-soft,
+.hover\:bg-blue-600,
+.hover\:bg-blue-700,
+.hover\:bg-gray-100,
+.hover\:bg-gray-200,
+.hover\:text-gn-primary,
+.hover\:underline,
+[class*="hover:"],
+[onclick],
+.cursor-pointer {
   cursor: pointer !important;
 }
 
-/* Also for elements with onClick */
-[onclick],
-.cursor-pointer {
+/* Interactive Tailwind classes */
+.rounded-lg[class*="hover"],
+.rounded-md[class*="hover"],
+.rounded-full[class*="hover"],
+.p-2[class*="hover"],
+.p-3[class*="hover"],
+.px-4[class*="hover"],
+.py-2[class*="hover"],
+.flex[class*="hover"],
+.bg-gn-primary,
+.bg-gn-secondary,
+.bg-blue-600,
+.bg-red-500,
+.bg-green-500,
+.bg-yellow-500,
+.text-gn-primary:hover,
+.text-blue-600:hover {
+  cursor: pointer !important;
+}
+
+/* Sidebar and navigation items */
+.sidebar-item,
+.nav-item,
+.menu-item,
+.list-item,
+.dropdown-item {
+  cursor: pointer !important;
+}
+
+/* Icons that are clickable */
+svg:not(.no-pointer),
+.icon,
+.fa,
+.fas,
+.far,
+.fab {
+  cursor: pointer !important;
+}
+
+/* Modal close buttons and overlays */
+.modal-close,
+.close-btn,
+.dismiss,
+[aria-label="Close"],
+[aria-label="close"] {
+  cursor: pointer !important;
+}
+
+/* Ensure divs/spans with click handlers look clickable */
+div[role="button"],
+span[role="button"],
+div.clickable,
+span.clickable {
   cursor: pointer !important;
 }

@@ -10,9 +10,10 @@ interface ProfileModalProps {
   onClose: () => void;
   userProfile?: {
     id?: number;
-    user_id?: number;
     name: string;
     email: string;
+    avatar_url?: string | null;
+    created_at?: string;
   } | null;
   onProfileUpdate?: () => void;
 }
@@ -98,7 +99,7 @@ export default function ProfileModal({ isOpen, onClose, userProfile, onProfileUp
             </label>
             <input
               type="text"
-              value={userProfile?.user_id || userProfile?.id || ''}
+              value={userProfile?.id || ''}
               className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 text-gray-500 outline-none"
               disabled
             />
