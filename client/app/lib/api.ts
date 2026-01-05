@@ -36,10 +36,14 @@ export const authAPI = {
       body: JSON.stringify({ email, password })
     });
     const data = await response.json();
-    if (data.token && data.user) {
+    if (data.token) {
       localStorage.setItem('token', data.token);
-      localStorage.setItem('userId', data.user.id.toString());
-      localStorage.setItem('userName', data.user.name);
+      if (data.user) {
+        localStorage.setItem('userId', data.user.id.toString());
+        localStorage.setItem('userName', data.user.name);
+      } else if (data.userId) {
+        localStorage.setItem('userId', data.userId.toString());
+      }
     }
     return data;
   },

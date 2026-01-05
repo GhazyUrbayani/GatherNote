@@ -26,8 +26,10 @@ export default function LoginPage() {
         const response = await authAPI.login(formData.email, formData.password);
         if (response.error) {
           setError(response.message || 'Login gagal');
-        } else {
+        } else if (response.token) {
           router.push('/');
+        } else {
+          setError('Login gagal: Token tidak ditemukan');
         }
       } else {
         // Register
