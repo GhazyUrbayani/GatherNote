@@ -7,7 +7,7 @@
     <img src="https://readme-typing-svg.herokuapp.com/?font=Poppins+Code&size=24&pause=1000&color=00BFFF&center=true&vCenter=true&width=600&lines=GatherNote+—+Collaborative+Note-Taking;Next.js+%2B+TypeScript+%2B+Express.js;Real-time+Collaboration+%26+Smart+Search" alt="Typing SVG">
   </a>
 
-  <br /><br />
+  <br />
 
   <p>
     <em>
